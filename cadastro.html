@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro – Minha Rotina Saudável</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="cadastro-container">
+    <h1>Crie sua conta</h1>
+    <form id="form-cadastro">
+      <label for="nome">Nome completo:</label>
+      <input type="text" id="nome" name="nome" required />
+
+      <label for="email">E-mail:</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" name="senha" required minlength="6" />
+
+      <label for="confirmar-senha">Confirmar senha:</label>
+      <input type="password" id="confirmar-senha" name="confirmar-senha" required minlength="6" />
+
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <p>Já tem uma conta? <a href="login.html">Entrar</a></p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Minha Rotina Saudável</p>
+  </footer>
+</body>
+</html>

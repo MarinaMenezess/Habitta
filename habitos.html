@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus Hábitos</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header>
+        <img src="" alt="">
+        <nav>
+            <a href="habitos.html">Meus Hábitos</a>
+            <a href="sugestoes.html">Sugestões</a>
+            <a href="progresso.html">Progresso</a>
+            <a href="ranking.html">Ranking</a>
+            <a href="recompensas.html">Recompensas</a>
+        </nav>
+        <nav>
+            <a href="perfil.html"><img src="" alt=""></a>
+            <a href="notificacoes.html"><img src="" alt=""></a>
+        </nav>
+    </header>
+
+  <main>
+    <section class="novo-habito">
+      <h2>Adicionar novo hábito</h2>
+      <form id="form-habito">
+        <input type="text" id="titulo" placeholder="Ex: Beber 2L de água" required />
+        <textarea id="descricao" placeholder="Descrição do hábito (opcional)"></textarea>
+        <label for="meta">Meta diária:</label>
+        <input type="number" id="meta" min="1" value="1" required />
+        <label for="recorrencia">Recorrência:</label>
+        <select id="recorrencia">
+          <option value="diario">Diário</option>
+          <option value="semanal">Semanal</option>
+          <option value="mensal">Mensal</option>
+        </select>
+        <button type="submit">Adicionar</button>
+      </form>
+    </section>
+
+    <section class="lista-habitos">
+      <h2>Hábitos Atuais</h2>
+      <ul id="habitos-lista">
+        <!-- Lista de hábitos renderizados dinamicamente -->
+        <li>
+          🥦 Comer vegetais <br />
+          <small>Meta: 1x/dia | Recorrência: Diário</small><br />
+          <button>✅ Concluir</button>
+          <button>✏️ Editar</button>
+          <button>🗑️ Excluir</button>
+        </li>
+        <!-- Repetir para cada hábito -->
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Minha Rotina Saudável</p>
+  </footer>
+
+  <script src="habitos.js"></script>
+</body>
+</html>
