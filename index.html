@@ -1,53 +1,97 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minha Rotina Saudável</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitta - Meus Hábitos</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <img src="" alt="">
-        <nav>
-            <a href="habitos.html">Meus Hábitos</a>
-            <a href="sugestoes.html">Sugestões</a>
-            <a href="progresso.html">Progresso</a>
-            <a href="ranking.html">Ranking</a>
-            <a href="recompensas.html">Recompensas</a>
-        </nav>
-        <nav>
-            <a href="perfil.html"><img src="" alt=""></a>
-            <a href="notificacoes.html"><img src="" alt=""></a>
-        </nav>
-    </header>
+  <section>
+  <header>
+    <img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="" id="logo">
+    <a href="perfil.html"><img src="./assets/person-circle.svg" alt=""></a>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <button class="new-habit">Criar novo <br> hábito <img src="./assets/add task.png" alt=""></button>
+      <nav class="menu">
+        <div>
+          <img src="./assets/calendar2-check.svg" alt="">
+          <a href="habitos.html">Meus hábitos</a>
+        </div>
+        <div>
+          <img src="./assets/bar-chart.svg" alt="">
+          <a href="ranking.html">Ranking</a>
+        </div>
+        <div>
+          <img src="./assets/clipboard-data.svg" alt="">
+          <a href="progresso.html">Meu progresso</a>
+        </div>
+        <div>
+          <img src="./assets/star-fill.svg" alt="">
+          <a href="recompensas.html">Recompensas</a>
+        </div>
+        <div>
+          <img src="./assets/bell.svg" alt="">
+          <a href="notificacoes.html">Notificações</a>
+        </div>
+      </nav>
+    </aside>
 
-  <main>
-    <section class="motivacional">
-      <h2>Mensagem do dia</h2>
-      <p id="mensagem-dia">"Você é mais forte do que pensa. Continue firme!"</p>
-    </section>
-
-    <section class="habitos-hoje">
-      <h2>Seus hábitos de hoje</h2>
-      <ul id="lista-habitos">
-        <!-- Os hábitos do dia serão listados dinamicamente aqui -->
-        <li>✔️ Meditar por 10 minutos</li>
-        <li>🏃‍♂️ Caminhar 30 minutos</li>
-        <li>🥗 Comer uma refeição saudável</li>
-      </ul>
-    </section>
-
-    <section class="progresso">
-      <h2>Seu progresso</h2>
-      <div class="barra-progresso">
-        <div class="progresso-preenchido" style="width: 70%;">70%</div>
+    <main class="main-content">
+      <div class="welcome-box">
+        <div class="text">
+          <h2 id="boas-vindas">Olá, <b>[Nome do Usuário]</b></h2>
+          <p>Seu plano de hoje está pronto. Bora?</p>
+        </div>
+        <div class="illustration">
+          <img src="./assets/image index.png" alt="">
+        </div>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    <p>&copy; 2025 Minha Rotina Saudável</p>
-  </footer>
+      <div class="stats">
+        <div class="card" id="card1">
+          <h3>10</h3>
+          <p>Hábitos a fazer</p>
+        </div>
+        <div class="card" id="card2">
+          <h3>0%</h3>
+          <p>Hábitos concluídos</p>
+        </div>
+        <div class="card" id="card3">
+          <h3>0</h3>
+          <p>Pontos acumulados</p>
+        </div>
+      </div>
+
+      <div class="habits">
+        <h3>Meus hábitos:</h3>
+        <hr>
+        <ul>
+          <li class="habit-card">
+            <input type="checkbox" />
+          <div class="habit-info">
+            <div>
+              <h4>Beber 2L de água</h4>
+              <p class="tipo">Meta diária</p>
+            </div>
+            <div>
+              <p><b>Descrição:</b></p>
+              <p><b>Horário:</b></p>
+            </div>
+            <div class="bottom">
+              <p class="points">10 pontos</p>
+              <p class="alert">Não posso fazer nesse horário</p>
+            </div>
+          </li>
+        </ul>
+      
+      </div>
+    </main>
+  </div>
+  </section>
+  <script src="index.js"></script>
 </body>
 </html>

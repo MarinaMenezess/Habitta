@@ -1,0 +1,308 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Raleway", sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #E8E8E8;
+  color: #333;
+}
+
+section {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  height: 750px;
+  margin: 40px auto;
+}
+
+#logo-login {
+  height: 100px;
+  width: 150px;
+}
+
+.containerCadastroLogin {
+  display: flex;
+  justify-content: space-around;
+}
+
+hr {
+  width: 50%;
+}
+
+.form {
+  flex: 1 1 400px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.containerCadastroLogin img {
+  width: 670px;
+  height: 400px;
+  margin-top: 20px;
+}
+
+.containerCadastroLogin h1 {
+  color: #2D1674;
+  font-weight: 900;
+  font-size: 40px;
+}
+
+.containerSenha {
+  display: flex;
+  gap: 10px;
+}
+
+.containerSenha .campo input {
+  width: 80%;
+}
+
+.campo {
+  position: relative;
+  margin: 20px 0;
+}
+
+.campo input {
+  width: 70%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  outline: none;
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.campo label {
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  color: #aaa;
+  font-size: 16px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+  background-color: white;
+  padding: 0 5px;
+}
+
+.botoes {
+  display: flex;
+  gap: 30px;
+  margin-top: 12px;
+}
+
+button {
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+button.confirmar {
+  background-color: #6f42c1;
+  color: white;
+}
+
+button.confirmar:hover {
+  background-color: #442b74;
+}
+
+button.login:hover {
+  background-color: #d7d7d7;
+}
+
+button.login {
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+}
+
+.campo input:focus + label,
+.campo input:not(:placeholder-shown) + label {
+  top: -5px;
+  left: 8px;
+  font-size: 12px;
+  color: #333;
+}
+
+header{
+  display: flex;
+  justify-content: space-between;
+  padding: 20px
+}
+
+.container {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1rem;
+  gap: 30px;
+  width: 250px;
+}
+
+#logo{
+  width: 300px;
+  margin: 25px;
+}
+
+.new-habit {
+  display: flex;
+  background-color: #E3E3E3;
+  color: #703acf;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  justify-content: space-between;
+  text-align: start;
+  gap: 10px;
+}
+
+.new-habit img{
+  width: 20%;
+}
+
+.menu{
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.menu a {
+  display: block;
+  padding: 0.8rem 0;
+  color: #703ACF;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  width: 55vw;
+  gap: 30px;
+  align-items: center;
+}
+
+.welcome-box {
+  background-color: #d3b6f1;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 15vh;
+  width: 100%;
+}
+
+.welcome-box img{
+  height: 17vh;
+}
+
+#boas-vindas{
+  color: #2D1674;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  width: 40vw;
+}
+
+.card {
+  color: white;
+  flex: 1;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  height: 10vh;
+}
+
+#card1{
+  background-color: #2D1674;
+}
+
+#card2{
+  background-color: #553CA1;
+}
+
+#card3{
+  background-color: #8065D4;
+}
+
+.card h3 {
+  font-size: 2rem;
+}
+
+.habits{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 20px;
+}
+
+.habits h3 {
+  color: #9b9b9b;
+}
+
+.habits hr{
+  background-color: #9b9b9b;
+  width: 100%;
+}
+
+.habit-card {
+  display: flex;
+  align-items: flex-start;
+  background-color: #eee;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.habit-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+  width: 100%;
+  gap: 6px;
+}
+
+.habit-info h4 {
+  color: #8065D4;
+}
+
+.bottom{
+  display: flex;
+  justify-content: space-between;
+}
+
+.bottom p{
+  font-weight: bold;
+  color: #553CA1;
+}
+
+.tipo{
+  font-size: 13px;
+}
+
+nav div{
+  display: flex;
+  gap: 10px;
+}
+
+nav div img{
+  width: 25px;
+}
