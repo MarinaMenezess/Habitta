@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitta - Meus Hábitos</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <section>
+  <header>
+    <a href="index.html"><img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="" id="logo"></a>
+    <a href="perfil.html"><img src="./assets/person-circle.svg" alt="" id="perfil"></a>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <button class="new-habit">Criar novo <br> hábito <img src="./assets/add task.png" alt=""></button>
+      <nav class="menu">
+        <div class="nav-sections">
+          <img src="./assets/calendar2-check.svg" alt="">
+          <a href="habitos.html">Meus hábitos</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bar-chart.svg" alt="">
+          <a href="ranking.html">Ranking</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/clipboard-data.svg" alt="">
+          <a href="progresso.html">Meu progresso</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/star-fill.svg" alt="">
+          <a href="recompensas.html">Recompensas</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bell.svg" alt="">
+          <a href="notificacoes.html">Notificações</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1 id="title">Recompensas</h1>
+      <hr>
+      <ul id="recompensas">
+        <li class="recompensa blocked">
+            <h1 class="recomp-title blocked">Primeiro hébito concluído</h1>
+            <p>Conclua para coletar a recompensa</p>
+            <h3>100 pontos</h3>
+        </li>
+        <li class="recompensa">
+            <div class="recomp">
+                <img src="./assets/star-fill.svg" alt="">
+                <h1 class="recomp-title">30 dias seguidos</h1>
+            </div>
+            <p>Coletar recompensa</p>
+            <h3>100 pontos</h3>
+        </li>
+        <li class="recompensa">
+            <div class="recomp">
+                <img src="./assets/star-fill.svg" alt="">
+                <h1 class="recomp-title">Fez 4 hábitos de Saúde Física</h1>
+            </div>
+            <p>Coletar recompensa</p>
+            <h3>100 pontos</h3>
+        </li>
+        <li class="recompensa">
+            <div class="recomp">
+                <img src="./assets/star-fill.svg" alt="">
+                <h1 class="recomp-title">Primeiro lugar no ranking</h1>
+            </div>
+            <p>Coletar recompensa</p>
+            <h3>100 pontos</h3>
+        </li>
+    </ul>
+    </main>
+  </div>
+  </section>
+  <script src="progresso.js"></script>
+</body>
+</html>

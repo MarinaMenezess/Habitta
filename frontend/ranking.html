@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitta - Meus Hábitos</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <section>
+  <header>
+    <a href="index.html"><img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="" id="logo"></a>
+    <a href="perfil.html"><img src="./assets/person-circle.svg" alt="" id="perfil"></a>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <button class="new-habit">Criar novo <br> hábito <img src="./assets/add task.png" alt=""></button>
+      <nav class="menu">
+        <div class="nav-sections">
+          <img src="./assets/calendar2-check.svg" alt="">
+          <a href="habitos.html">Meus hábitos</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bar-chart.svg" alt="">
+          <a href="ranking.html">Ranking</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/clipboard-data.svg" alt="">
+          <a href="progresso.html">Meu progresso</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/star-fill.svg" alt="">
+          <a href="recompensas.html">Recompensas</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bell.svg" alt="">
+          <a href="notificacoes.html">Notificações</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content" id="ranking-main">
+      <h1 id="title">Ranking de Usuários</h1>
+      <hr>
+      <div>
+        <ul id="ranking">
+            <li class="ranking-user" id="1st">
+                <img src="./assets/crown.svg" alt="" class="place">
+                <div>
+                    <p><b>User</b></p>
+                    <p>500 pontos</p>
+                </div>
+            </li>
+            <li class="ranking-user" id="2nd">
+                <p class="place">02</p>
+                <div>
+                    <p><b>User</b></p>
+                    <p>350 pontos</p>
+                </div>
+            </li>
+            <li class="ranking-user" id="3rd"> 
+                <p class="place">03</p>
+                <div>
+                    <p><b>User</b></p>
+                    <p>230 pontos</p>
+                </div>
+            </li>
+            <li class="ranking-user" id="4th">
+                <p class="place">04</p>
+                <div>
+                    <p><b>User</b></p>
+                    <p>160 pontos</p>
+                </div>
+            </li>
+            <li class="ranking-user" id="5th">
+                <p class="place">05</p>
+                <div>
+                    <p><b>User</b></p>
+                    <p>80 pontos</p>
+                </div>
+            </li>
+            <li class="ranking-user" id="user">
+                <p class="place">762</p>
+                <div>
+                    <p><b>Você</b></p>
+                    <p>0 pontos</p>
+                </div>
+            </li>
+        </ul>
+      </div>
+    </main>
+  </div>
+  </section>
+  <script src="ranking.js"></script>
+</body>
+</html>
