@@ -3,7 +3,6 @@ const express = require('express');           // Framework para criar nosso serv
 const path = require('path');                 // Ajuda a trabalhar com caminhos de arquivos
 const cors = require('cors');                 // Permite que outros sites acessem nossa API
 const db = require('./db_config');             // Nossas configurações do banco de dados
-const upload = require('./multer');           // Para receber arquivos (como fotos)
 
 // Criando nosso servidor
 const app = express();
@@ -18,31 +17,24 @@ app.use('/assets', express.static(path.join(__dirname, '../assets')));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '..')));
 
-// Função simples para verificar se o usuário está logado
+// Middleware de verificação de login
 const verificarLogin = (req, res, next) => {
-  // Pega o ID do usuário do cabeçalho da requisição
   const idUsuario = req.headers['user-id'];
-  
-  // Se não tiver ID do usuário, retorna erro
   if (!idUsuario) {
     return res.status(401).json({ 
       sucesso: false, 
       mensagem: 'Você precisa estar logado para fazer isso!' 
     });
   }
-
-  // Verifica se o usuário existe no banco
-  db.query('SELECT * FROM users WHERE id = ?', [idUsuario], (erro, usuarios) => {
+  db.query('SELECT * FROM usuarios WHERE id = ?', [idUsuario], (erro, usuarios) => {
     if (erro || usuarios.length === 0) {
       return res.status(403).json({ 
         sucesso: false, 
         mensagem: 'Usuário não encontrado!' 
       });
     }
-    
-    // Se encontrou o usuário, salva os dados dele na requisição
     req.usuario = usuarios[0];
-    next();  // Continua para a próxima função
+    next();
   });
 };
 
@@ -51,45 +43,32 @@ const verificarLogin = (req, res, next) => {
 //===================================================
 
 // Cadastro de novo usuário (Simplificado)
-app.post('/api/users/register', upload.single('foto_perfil'), (req, res) => {
+app.post('/api/users/register', (req, res) => {
   try {
     const { nome, email, senha } = req.body;
-    
-    // Verifica se todos os campos foram preenchidos
     if (!nome || !email || !senha) {
       return res.status(400).json({ 
         sucesso: false, 
         mensagem: 'Por favor, preencha todos os campos!' 
       });
     }
-    
-    // Verifica se já existe um usuário com este email
-    db.query('SELECT id FROM users WHERE email = ?', [email], (erro, resultados) => {
+    db.query('SELECT id FROM usuarios WHERE email = ?', [email], (erro, resultados) => {
       if (erro) {
         return res.status(500).json({ 
           sucesso: false, 
-          mensagem: 'Ops! Algo deu errado ao verificar o email', 
+          mensagem: 'Erro ao verificar email', 
           erro: erro 
         });
       }
-      
       if (resultados.length > 0) {
         return res.status(409).json({ 
           sucesso: false, 
           mensagem: 'Este email já está sendo usado' 
         });
       }
-      
-      // Define o caminho da foto de perfil (se foi enviada)
-      let caminhoFoto = null;
-      if (req.file) {
-        caminhoFoto = `/assets/images/${req.file.filename}`;
-      }
-      
-      // Salva o novo usuário no banco de dados (com senha em texto puro - apenas para protótipo!)
       db.query(
-        'INSERT INTO users (name, email, password, profile_image) VALUES (?, ?, ?, ?)',
-        [nome, email, senha, caminhoFoto],
+        'INSERT INTO usuarios (nome, email, senha_hash) VALUES (?, ?, ?)',
+        [nome, email, senha],
         (erro, resultado) => {
           if (erro) {
             return res.status(500).json({ 
@@ -98,10 +77,8 @@ app.post('/api/users/register', upload.single('foto_perfil'), (req, res) => {
               erro: erro 
             });
           }
-
-          // Busca os dados do usuário criado
           db.query(
-            'SELECT id, name, email, profile_image, points, created_at FROM users WHERE id = ?', 
+            'SELECT id, nome, email, data_criacao FROM usuarios WHERE id = ?', 
             [resultado.insertId], 
             (erro, usuarios) => {
               if (erro) {
@@ -111,7 +88,6 @@ app.post('/api/users/register', upload.single('foto_perfil'), (req, res) => {
                   erro: erro 
                 });
               }
-              
               res.status(201).json({ 
                 sucesso: true, 
                 mensagem: 'Usuário criado com sucesso!', 
@@ -125,7 +101,7 @@ app.post('/api/users/register', upload.single('foto_perfil'), (req, res) => {
   } catch (erro) {
     res.status(500).json({ 
       sucesso: false, 
-      mensagem: 'Ops! Algo deu errado no servidor', 
+      mensagem: 'Erro no servidor', 
       erro: erro.message 
     });
   }
@@ -135,18 +111,14 @@ app.post('/api/users/register', upload.single('foto_perfil'), (req, res) => {
 app.post('/api/users/login', (req, res) => {
   try {
     const { email, senha } = req.body;
-    
-    // Verifica se email e senha foram fornecidos
     if (!email || !senha) {
       return res.status(400).json({ 
         sucesso: false, 
         mensagem: 'Por favor, informe email e senha!' 
       });
     }
-    
-    // Busca o usuário pelo email e senha
     db.query(
-      'SELECT * FROM users WHERE email = ? AND password = ?', 
+      'SELECT * FROM usuarios WHERE email = ? AND senha_hash = ?', 
       [email, senha], 
       (erro, usuarios) => {
         if (erro) {
@@ -156,20 +128,14 @@ app.post('/api/users/login', (req, res) => {
             erro: erro 
           });
         }
-        
-        // Se não encontrou o usuário
         if (usuarios.length === 0) {
           return res.status(401).json({ 
             sucesso: false, 
             mensagem: 'Email ou senha incorretos' 
           });
         }
-        
         const usuario = usuarios[0];
-        
-        // Remove a senha antes de enviar os dados do usuário
-        delete usuario.password;
-        
+        delete usuario.senha_hash;
         res.status(200).json({
           sucesso: true,
           mensagem: 'Login realizado com sucesso!',
@@ -180,7 +146,7 @@ app.post('/api/users/login', (req, res) => {
   } catch (erro) {
     res.status(500).json({ 
       sucesso: false, 
-      mensagem: 'Ops! Algo deu errado no servidor', 
+      mensagem: 'Erro no servidor', 
       erro: erro.message 
     });
   }
@@ -190,7 +156,7 @@ app.post('/api/users/login', (req, res) => {
 app.get('/api/users/me', verificarLogin, (req, res) => {
   // Como já temos os dados do usuário da função verificarLogin, podemos retorná-los diretamente
   const usuario = { ...req.usuario };
-  delete usuario.password;  // Remove a senha dos dados
+  delete usuario.senha_hash;  // Remove a senha dos dados
   
   res.status(200).json({ 
     sucesso: true, 
@@ -199,44 +165,32 @@ app.get('/api/users/me', verificarLogin, (req, res) => {
 });
 
 // Atualizar perfil do usuário
-app.put('/api/users/me', verificarLogin, upload.single('foto_perfil'), (req, res) => {
+app.put('/api/users/me', verificarLogin, (req, res) => {
   const { nome } = req.body;
   let updateFields = [];
   let queryParams = [];
-  
   if (nome) {
-    updateFields.push('name = ?');
+    updateFields.push('nome = ?');
     queryParams.push(nome);
   }
-
-    if (req.file) {
-    updateFields.push('profile_image = ?');
-    queryParams.push(`/assets/images/${req.file.filename}`);
-  }
-  
   if (updateFields.length === 0) {
     return res.status(400).json({ sucesso: false, mensagem: 'Nenhum campo para atualizar' });
   }
-  
-  // Adiciona o ID do usuário aos parâmetros
   queryParams.push(req.usuario.id);
-  
   db.query(
-    `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+    `UPDATE usuarios SET ${updateFields.join(', ')} WHERE id = ?`,
     queryParams,
     (err) => {
       if (err) {
         return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar usuário', erro: err });
       }
-      
       db.query(
-        'SELECT id, name, email, profile_image, points, created_at FROM users WHERE id = ?',
+        'SELECT id, nome, email, data_criacao FROM usuarios WHERE id = ?',
         [req.usuario.id],
         (err, rows) => {
           if (err) {
             return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar usuário atualizado', erro: err });
           }
-          
           res.status(200).json({ sucesso: true, mensagem: 'Perfil atualizado com sucesso', dados: rows[0] });
         }
       );
@@ -247,12 +201,11 @@ app.put('/api/users/me', verificarLogin, upload.single('foto_perfil'), (req, res
 // Obter ranking de usuários
 app.get('/api/users/ranking', (req, res) => {
   db.query(
-    'SELECT id, name, profile_image, points FROM users ORDER BY points DESC LIMIT 10',
+    'SELECT id, nome, pontos FROM usuarios ORDER BY pontos DESC LIMIT 10',
     (err, rows) => {
       if (err) {
         return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar ranking', erro: err });
       }
-      
       res.status(200).json({ sucesso: true, dados: rows });
     }
   );
@@ -265,26 +218,21 @@ app.get('/api/users/ranking', (req, res) => {
 // Criar novo hábito
 app.post('/api/habits', verificarLogin, (req, res) => {
   try {
-    const { titulo, descricao, frequencia, contagem_objetivo, icone, cor } = req.body;
-    
-    // Validação básica
-    if (!titulo || !frequencia) {
-      return res.status(400).json({ sucesso: false, mensagem: 'Título e frequência são obrigatórios' });
+    const { titulo, descricao, meta_diaria, recorrencia } = req.body;
+    if (!titulo || !recorrencia) {
+      return res.status(400).json({ sucesso: false, mensagem: 'Título e recorrência são obrigatórios' });
     }
-
     db.query(
-      'INSERT INTO habits (user_id, title, description, frequency, target_count, icon, color) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [req.usuario.id, titulo, descricao, frequencia, contagem_objetivo || 1, icone, cor],
+      'INSERT INTO habitos (usuario_id, titulo, descricao, meta_diaria, recorrencia) VALUES (?, ?, ?, ?, ?)',
+      [req.usuario.id, titulo, descricao, meta_diaria || 1, recorrencia],
       (err, result) => {
         if (err) {
           return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar hábito', erro: err });
         }
-        
-        db.query('SELECT * FROM habits WHERE id = ?', [result.insertId], (err, rows) => {
+        db.query('SELECT * FROM habitos WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) {
             return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar hábito criado', erro: err });
           }
-          
           res.status(201).json({ 
             sucesso: true, 
             mensagem: 'Hábito criado com sucesso', 
@@ -301,7 +249,7 @@ app.post('/api/habits', verificarLogin, (req, res) => {
 // Listar hábitos do usuário
 app.get('/api/habits', verificarLogin, (req, res) => {
   db.query(
-    'SELECT * FROM habits WHERE user_id = ? ORDER BY created_at DESC',
+    'SELECT * FROM habitos WHERE usuario_id = ? ORDER BY data_criacao DESC',
     [req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -313,238 +261,11 @@ app.get('/api/habits', verificarLogin, (req, res) => {
   );
 });
 
-// Obter detalhes de um hábito específico
-app.get('/api/habits/:id', verificarLogin, (req, res) => {
-  const habitId = req.params.id;
-  
-  db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-    [habitId, req.usuario.id],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar hábito', erro: err });
-      }
-      
-      if (rows.length === 0) {
-        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-      }
-      
-      res.status(200).json({ sucesso: true, dados: rows[0] });
-    }
-  );
-});
-
-// Atualizar hábito
-app.put('/api/habits/:id', verificarLogin, (req, res) => {
-  const habitId = req.params.id;
-  const { titulo, descricao, frequencia, contagem_objetivo, icone, cor } = req.body;
-  
-  // Verificar se o hábito pertence ao usuário
-  db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-    [habitId, req.usuario.id],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
-      }
-      
-      if (rows.length === 0) {
-        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-      }
-      
-      // Atualizar o hábito
-      db.query(
-        'UPDATE habits SET title = ?, description = ?, frequency = ?, target_count = ?, icon = ?, color = ? WHERE id = ?',
-        [titulo, descricao, frequencia, contagem_objetivo, icone, cor, habitId],
-        (err) => {
-          if (err) {
-            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar hábito', erro: err });
-          }
-          
-          db.query('SELECT * FROM habits WHERE id = ?', [habitId], (err, rows) => {
-            if (err) {
-              return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar hábito atualizado', erro: err });
-            }
-            
-            res.status(200).json({ sucesso: true, mensagem: 'Hábito atualizado com sucesso', dados: rows[0] });
-          });
-        }
-      );
-    }
-  );
-});
-
-// Excluir hábito
-app.delete('/api/habits/:id', verificarLogin, (req, res) => {
-  const habitId = req.params.id;
-  
-  // Verificar se o hábito pertence ao usuário
-  db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-    [habitId, req.usuario.id],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
-      }
-      
-      if (rows.length === 0) {
-        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-      }
-      
-      // Excluir o hábito
-      db.query('DELETE FROM habits WHERE id = ?', [habitId], (err) => {
-        if (err) {
-          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao excluir hábito', erro: err });
-        }
-        
-        res.status(200).json({ sucesso: true, mensagem: 'Hábito excluído com sucesso' });
-      });
-    }
-  );
-});
-
-// Registrar rastreamento de hábito (marcar como concluído ou progresso)
-app.post('/api/habits/:id/track', verificarLogin, (req, res) => {
-  const habitId = req.params.id;
-  const { data, concluido, conta, notas } = req.body;
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  
-  // Verificar se o hábito pertence ao usuário
-  db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-    [habitId, req.usuario.id],
-    (err, habitRows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
-      }
-      
-      if (habitRows.length === 0) {
-        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-      }
-      
-      const habit = habitRows[0];
-      const trackDate = data || today;
-      
-      // Verificar se já existe um registro para este hábito nesta data
-      db.query(
-        'SELECT * FROM habit_tracking WHERE habit_id = ? AND date = ?',
-        [habitId, trackDate],
-        (err, trackRows) => {
-          if (err) {
-            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar rastreamento', erro: err });
-          }
-          
-          // Determinar se o objetivo foi atingido
-          const trackCount = conta !== undefined ? conta : 1;
-          const isCompleted = concluido !== undefined ? concluido : (trackCount >= habit.target_count);
-          
-          if (trackRows.length > 0) {
-            // Atualizar registro existente
-            db.query(
-              'UPDATE habit_tracking SET completed = ?, count = ?, notes = ? WHERE id = ?',
-              [isCompleted, trackCount, notas, trackRows[0].id],
-              (err) => {
-                if (err) {
-                  return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar rastreamento', erro: err });
-                }
-                
-                // Atualizar pontuação do usuário se o hábito for concluído
-                if (isCompleted && !trackRows[0].completed) {
-                  db.query('UPDATE users SET points = points + 10 WHERE id = ?', [req.usuario.id]);
-                  
-                  // Verificar conquistas
-                  checkAchievements(req.usuario.id);
-                }
-                
-                res.status(200).json({ 
-                  sucesso: true, 
-                  mensagem: 'Rastreamento atualizado com sucesso',
-                  concluido: isCompleted
-                });
-              }
-            );
-          } else {
-            // Criar novo registro
-            db.query(
-              'INSERT INTO habit_tracking (habit_id, date, completed, count, notes) VALUES (?, ?, ?, ?, ?)',
-              [habitId, trackDate, isCompleted, trackCount, notas],
-              (err) => {
-                if (err) {
-                  return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar rastreamento', erro: err });
-                }
-                
-                // Atualizar pontuação do usuário se o hábito for concluído
-                if (isCompleted) {
-                  db.query('UPDATE users SET points = points + 10 WHERE id = ?', [req.usuario.id]);
-                  
-                  // Verificar conquistas
-                  checkAchievements(req.usuario.id);
-                }
-                
-                res.status(201).json({ 
-                  sucesso: true, 
-                  mensagem: 'Rastreamento criado com sucesso',
-                  concluido: isCompleted 
-                });
-              }
-            );
-          }
-        }
-      );
-    }
-  );
-});
-
-// Obter histórico de rastreamento de um hábito
-app.get('/api/habits/:id/history', verificarLogin, (req, res) => {
-  const habitId = req.params.id;
-  const { start_date, end_date } = req.query;
-  
-  // Verificar se o hábito pertence ao usuário
-  db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-    [habitId, req.usuario.id],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
-      }
-      
-      if (rows.length === 0) {
-        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-      }
-      
-      // Construir a consulta com datas opcionais
-      let query = 'SELECT * FROM habit_tracking WHERE habit_id = ?';
-      let params = [habitId];
-      
-      if (start_date) {
-        query += ' AND date >= ?';
-        params.push(start_date);
-      }
-      
-      if (end_date) {
-        query += ' AND date <= ?';
-        params.push(end_date);
-      }
-      
-      query += ' ORDER BY date DESC';
-      
-      db.query(query, params, (err, rows) => {
-        if (err) {
-          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar histórico', erro: err });
-        }
-        
-        res.status(200).json({ sucesso: true, dados: rows });
-      });
-    }
-  );
-});
-
-// Obter estatísticas do usuário
+// Obter estatísticas do usuário - MOVIDA PARA ANTES DA ROTA COM :id
 app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
   // Obter total de hábitos
   db.query(
-    'SELECT COUNT(*) as total_habits FROM habits WHERE user_id = ?',
+    'SELECT COUNT(*) as total_habits FROM habitos WHERE usuario_id = ?',
     [req.usuario.id],
     (err, habitRows) => {
       if (err) {
@@ -559,10 +280,10 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
       const formattedDate = thirtyDaysAgo.toISOString().split('T')[0];
       
       db.query(
-        `SELECT COUNT(DISTINCT date) as active_days 
-         FROM habit_tracking ht 
-         JOIN habits h ON ht.habit_id = h.id 
-         WHERE h.user_id = ? AND ht.completed = 1 AND ht.date >= ?`,
+        `SELECT COUNT(DISTINCT data) as active_days 
+         FROM progresso p 
+         JOIN habitos h ON p.habito_id = h.id 
+         WHERE h.usuario_id = ? AND p.quantidade > 0 AND p.data >= ?`,
         [req.usuario.id, formattedDate],
         (err, daysRows) => {
           if (err) {
@@ -573,26 +294,26 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
           
           // Obter sequência atual
           db.query(
-            `SELECT user_id, MAX(streak) as current_streak FROM (
+            `SELECT usuario_id, MAX(streak) as current_streak FROM (
               SELECT 
-                h.user_id,
-                DATEDIFF(@curr_date, date) - 
+                h.usuario_id,
+                DATEDIFF(@curr_date, data) - 
                   IF(@prev_completed = 1, 
                      DATEDIFF(@curr_date, @prev_date), 0) as streak,
-                @prev_date := date,
-                @prev_completed := completed,
+                @prev_date := data,
+                @prev_completed := quantidade > 0,
                 @curr_date := CURRENT_DATE
               FROM 
-                habit_tracking ht
-                JOIN habits h ON ht.habit_id = h.id,
+                progresso p
+                JOIN habitos h ON p.habito_id = h.id,
                 (SELECT @curr_date := CURRENT_DATE, 
                         @prev_date := NULL, 
                         @prev_completed := NULL) as vars
               WHERE 
-                h.user_id = ?
-                AND ht.completed = 1
+                h.usuario_id = ?
+                AND p.quantidade > 0
               ORDER BY 
-                date DESC
+                data DESC
             ) as streak_calc`,
             [req.usuario.id],
             (err, streakRows) => {
@@ -600,17 +321,17 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
                 return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar estatísticas', erro: err });
               }
               
-              const currentStreak = streakRows[0].current_streak || 0;
+              const currentStreak = streakRows[0]?.current_streak || 0;
               
               // Obter hábitos mais consistentes
               db.query(
                 `SELECT 
-                  h.id, h.title, COUNT(*) as completion_count 
+                  h.id, h.titulo, COUNT(*) as completion_count 
                 FROM 
-                  habit_tracking ht 
-                  JOIN habits h ON ht.habit_id = h.id 
+                  progresso p 
+                  JOIN habitos h ON p.habito_id = h.id 
                 WHERE 
-                  h.user_id = ? AND ht.completed = 1 
+                  h.usuario_id = ? AND p.quantidade > 0 
                 GROUP BY 
                   h.id 
                 ORDER BY 
@@ -641,69 +362,210 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
   );
 });
 
+// Obter detalhes de um hábito específico
+app.get('/api/habits/:id', verificarLogin, (req, res) => {
+  const habitId = req.params.id;
+  
+  db.query(
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+    [habitId, req.usuario.id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar hábito', erro: err });
+      }
+      
+      if (rows.length === 0) {
+        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
+      }
+      
+      res.status(200).json({ sucesso: true, dados: rows[0] });
+    }
+  );
+});
+
+// Atualizar hábito
+app.put('/api/habits/:id', verificarLogin, (req, res) => {
+  const habitId = req.params.id;
+  const { titulo, descricao, meta_diaria, recorrencia } = req.body;
+  
+  // Verificar se o hábito pertence ao usuário
+  db.query(
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+    [habitId, req.usuario.id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
+      }
+      
+      if (rows.length === 0) {
+        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
+      }
+      
+      // Atualizar o hábito
+      db.query(
+        'UPDATE habitos SET titulo = ?, descricao = ?, meta_diaria = ?, recorrencia = ? WHERE id = ?',
+        [titulo, descricao, meta_diaria, recorrencia, habitId],
+        (err) => {
+          if (err) {
+            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar hábito', erro: err });
+          }
+          
+          db.query('SELECT * FROM habitos WHERE id = ?', [habitId], (err, rows) => {
+            if (err) {
+              return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar hábito atualizado', erro: err });
+            }
+            
+            res.status(200).json({ sucesso: true, mensagem: 'Hábito atualizado com sucesso', dados: rows[0] });
+          });
+        }
+      );
+    }
+  );
+});
+
+// Excluir hábito
+app.delete('/api/habits/:id', verificarLogin, (req, res) => {
+  const habitId = req.params.id;
+  
+  // Verificar se o hábito pertence ao usuário
+  db.query(
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+    [habitId, req.usuario.id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
+      }
+      
+      if (rows.length === 0) {
+        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
+      }
+      
+      // Excluir o hábito
+      db.query('DELETE FROM habitos WHERE id = ?', [habitId], (err) => {
+        if (err) {
+          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao excluir hábito', erro: err });
+        }
+        
+        res.status(200).json({ sucesso: true, mensagem: 'Hábito excluído com sucesso' });
+      });
+    }
+  );
+});
+
+// Registrar rastreamento de hábito (marcar como concluído ou progresso)
+app.post('/api/habits/:id/track', verificarLogin, (req, res) => {
+  const habitId = req.params.id;
+  const { data, quantidade } = req.body;
+  const today = new Date().toISOString().split('T')[0];
+  db.query(
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+    [habitId, req.usuario.id],
+    (err, habitRows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
+      }
+      if (habitRows.length === 0) {
+        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
+      }
+      const trackDate = data || today;
+      db.query(
+        'SELECT * FROM progresso WHERE habito_id = ? AND data = ?',
+        [habitId, trackDate],
+        (err, trackRows) => {
+          if (err) {
+            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar progresso', erro: err });
+          }
+          const trackCount = quantidade !== undefined ? quantidade : 1;
+          if (trackRows.length > 0) {
+            db.query(
+              'UPDATE progresso SET quantidade = ? WHERE id = ?',
+              [trackCount, trackRows[0].id],
+              (err) => {
+                if (err) {
+                  return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar progresso', erro: err });
+                }
+                res.status(200).json({ 
+                  sucesso: true, 
+                  mensagem: 'Progresso atualizado com sucesso'
+                });
+              }
+            );
+          } else {
+            db.query(
+              'INSERT INTO progresso (habito_id, data, quantidade) VALUES (?, ?, ?)',
+              [habitId, trackDate, trackCount],
+              (err) => {
+                if (err) {
+                  return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar progresso', erro: err });
+                }
+                res.status(201).json({ 
+                  sucesso: true, 
+                  mensagem: 'Progresso criado com sucesso'
+                });
+              }
+            );
+          }
+        }
+      );
+    }
+  );
+});
+
+// Obter histórico de rastreamento de um hábito
+app.get('/api/habits/:id/history', verificarLogin, (req, res) => {
+  const habitId = req.params.id;
+  const { start_date, end_date } = req.query;
+  
+  // Verificar se o hábito pertence ao usuário
+  db.query(
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+    [habitId, req.usuario.id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
+      }
+      
+      if (rows.length === 0) {
+        return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
+      }
+      
+      // Construir a consulta com datas opcionais
+      let query = 'SELECT * FROM progresso WHERE habito_id = ?';
+      let params = [habitId];
+      
+      if (start_date) {
+        query += ' AND data >= ?';
+        params.push(start_date);
+      }
+      
+      if (end_date) {
+        query += ' AND data <= ?';
+        params.push(end_date);
+      }
+      
+      query += ' ORDER BY data DESC';
+      
+      db.query(query, params, (err, rows) => {
+        if (err) {
+          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar histórico', erro: err });
+        }
+        
+        res.status(200).json({ sucesso: true, dados: rows });
+      });
+    }
+  );
+});
+
 //===================================================
 // ROTAS DE LEMBRETES
 //===================================================
 
-// Criar novo lembrete
-app.post('/api/reminders', verificarLogin, (req, res) => {
-  try {
-    const { habit_id, time, days, message } = req.body;
-    
-    // Validação básica
-    if (!habit_id || !time) {
-      return res.status(400).json({ sucesso: false, mensagem: 'Hábito e horário são obrigatórios' });
-    }
-    
-    // Verificar se o hábito pertence ao usuário
-    db.query(
-      'SELECT * FROM habits WHERE id = ? AND user_id = ?',
-      [habit_id, req.usuario.id],
-      (err, rows) => {
-        if (err) {
-          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar hábito', erro: err });
-        }
-        
-        if (rows.length === 0) {
-          return res.status(404).json({ sucesso: false, mensagem: 'Hábito não encontrado' });
-        }
-        
-        // Criar o lembrete
-        db.query(
-          'INSERT INTO reminders (habit_id, time, days, message, active) VALUES (?, ?, ?, ?, ?)',
-          [habit_id, time, days, message, true],
-          (err, result) => {
-            if (err) {
-              return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar lembrete', erro: err });
-            }
-            
-            db.query('SELECT * FROM reminders WHERE id = ?', [result.insertId], (err, rows) => {
-              if (err) {
-                return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar lembrete criado', erro: err });
-              }
-              
-              res.status(201).json({ 
-                sucesso: true, 
-                mensagem: 'Lembrete criado com sucesso', 
-                dados: rows[0] 
-              });
-            });
-          }
-        );
-      }
-    );
-  } catch (error) {
-    res.status(500).json({ sucesso: false, mensagem: 'Erro no servidor', erro: error.message });
-  }
-});
-
-// Listar lembretes do usuário
 app.get('/api/reminders', verificarLogin, (req, res) => {
   db.query(
-    `SELECT r.*, h.title as habit_title 
+    `SELECT r.*, h.titulo as habit_title 
      FROM reminders r 
-     JOIN habits h ON r.habit_id = h.id 
-     WHERE h.user_id = ? 
+     JOIN habitos h ON r.habito_id = h.id 
+     WHERE h.usuario_id = ? 
      ORDER BY r.time`,
     [req.usuario.id],
     (err, rows) => {
@@ -722,7 +584,7 @@ app.get('/api/reminders/habit/:id', verificarLogin, (req, res) => {
   
   // Verificar se o hábito pertence ao usuário
   db.query(
-    'SELECT * FROM habits WHERE id = ? AND user_id = ?',
+    'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
     [habitId, req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -735,7 +597,7 @@ app.get('/api/reminders/habit/:id', verificarLogin, (req, res) => {
       
       // Buscar lembretes do hábito
       db.query(
-        'SELECT * FROM reminders WHERE habit_id = ? ORDER BY time',
+        'SELECT * FROM reminders WHERE habito_id = ? ORDER BY time',
         [habitId],
         (err, rows) => {
           if (err) {
@@ -754,10 +616,10 @@ app.get('/api/reminders/:id', verificarLogin, (req, res) => {
   const reminderId = req.params.id;
   
   db.query(
-    `SELECT r.*, h.title as habit_title 
+    `SELECT r.*, h.titulo as habit_title 
      FROM reminders r 
-     JOIN habits h ON r.habit_id = h.id 
-     WHERE r.id = ? AND h.user_id = ?`,
+     JOIN habitos h ON r.habito_id = h.id 
+     WHERE r.id = ? AND h.usuario_id = ?`,
     [reminderId, req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -780,10 +642,10 @@ app.put('/api/reminders/:id', verificarLogin, (req, res) => {
   
   // Verificar se o lembrete pertence ao usuário
   db.query(
-    `SELECT r.*, h.user_id 
+    `SELECT r.*, h.usuario_id 
      FROM reminders r 
-     JOIN habits h ON r.habit_id = h.id 
-     WHERE r.id = ? AND h.user_id = ?`,
+     JOIN habitos h ON r.habito_id = h.id 
+     WHERE r.id = ? AND h.usuario_id = ?`,
     [reminderId, req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -834,9 +696,9 @@ app.put('/api/reminders/:id', verificarLogin, (req, res) => {
           }
           
           db.query(
-            `SELECT r.*, h.title as habit_title 
+            `SELECT r.*, h.titulo as habit_title 
              FROM reminders r 
-             JOIN habits h ON r.habit_id = h.id 
+             JOIN habitos h ON r.habito_id = h.id 
              WHERE r.id = ?`,
             [reminderId],
             (err, rows) => {
@@ -859,10 +721,10 @@ app.delete('/api/reminders/:id', verificarLogin, (req, res) => {
   
   // Verificar se o lembrete pertence ao usuário
   db.query(
-    `SELECT r.*, h.user_id 
+    `SELECT r.*, h.usuario_id 
      FROM reminders r 
-     JOIN habits h ON r.habit_id = h.id 
-     WHERE r.id = ? AND h.user_id = ?`,
+     JOIN habitos h ON r.habito_id = h.id 
+     WHERE r.id = ? AND h.usuario_id = ?`,
     [reminderId, req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -891,10 +753,10 @@ app.patch('/api/reminders/:id/toggle', verificarLogin, (req, res) => {
   
   // Verificar se o lembrete pertence ao usuário
   db.query(
-    `SELECT r.*, h.user_id 
+    `SELECT r.*, h.usuario_id 
      FROM reminders r 
-     JOIN habits h ON r.habit_id = h.id 
-     WHERE r.id = ? AND h.user_id = ?`,
+     JOIN habitos h ON r.habito_id = h.id 
+     WHERE r.id = ? AND h.usuario_id = ?`,
     [reminderId, req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -933,9 +795,8 @@ app.patch('/api/reminders/:id/toggle', verificarLogin, (req, res) => {
 // ROTAS DE CONQUISTAS
 //===================================================
 
-// Listar todas as conquistas do sistema
 app.get('/api/achievements', (req, res) => {
-  db.query('SELECT * FROM achievements ORDER BY points', (err, rows) => {
+  db.query('SELECT * FROM conquistas ORDER BY pontos', (err, rows) => {
     if (err) {
       return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar conquistas', erro: err });
     }
@@ -947,11 +808,11 @@ app.get('/api/achievements', (req, res) => {
 // Listar conquistas do usuário
 app.get('/api/achievements/user', verificarLogin, (req, res) => {
   db.query(
-    `SELECT a.*, ua.date_earned 
-     FROM achievements a
-     JOIN user_achievements ua ON a.id = ua.achievement_id
-     WHERE ua.user_id = ?
-     ORDER BY ua.date_earned DESC`,
+    `SELECT a.*, ua.data_ganho 
+     FROM conquistas a
+     JOIN user_conquistas ua ON a.id = ua.conquista_id
+     WHERE ua.usuario_id = ?
+     ORDER BY ua.data_ganho DESC`,
     [req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -966,14 +827,14 @@ app.get('/api/achievements/user', verificarLogin, (req, res) => {
 // Obter progresso das conquistas do usuário
 app.get('/api/achievements/progress', verificarLogin, (req, res) => {
   // Buscar todas as conquistas
-  db.query('SELECT * FROM achievements ORDER BY points', (err, allAchievements) => {
+  db.query('SELECT * FROM conquistas ORDER BY pontos', (err, allAchievements) => {
     if (err) {
       return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar conquistas', erro: err });
     }
     
     // Buscar conquistas do usuário
     db.query(
-      'SELECT achievement_id FROM user_achievements WHERE user_id = ?',
+      'SELECT conquista_id FROM user_conquistas WHERE usuario_id = ?',
       [req.usuario.id],
       (err, userAchievements) => {
         if (err) {
@@ -981,7 +842,7 @@ app.get('/api/achievements/progress', verificarLogin, (req, res) => {
         }
         
         // Criar conjunto de IDs de conquistas do usuário para facilitar a busca
-        const achievedIds = new Set(userAchievements.map(ua => ua.achievement_id));
+        const achievedIds = new Set(userAchievements.map(ua => ua.conquista_id));
         
         // Adicionar status de conclusão a cada conquista
         const achievementsWithStatus = allAchievements.map(achievement => ({
@@ -1010,11 +871,31 @@ app.get('/api/achievements/progress', verificarLogin, (req, res) => {
   });
 });
 
+// Obter últimas conquistas desbloqueadas por todos os usuários (feed público) - MOVIDA PARA ANTES DA ROTA COM :id
+app.get('/api/achievements/feed/recent', (req, res) => {
+  db.query(
+    `SELECT ua.id, ua.data_ganho, u.nome as user_name, u.foto_perfil, 
+            a.titulo as achievement_title, a.descricao, a.pontos, a.imagem_recompensa
+     FROM user_conquistas ua
+     JOIN usuarios u ON ua.usuario_id = u.id
+     JOIN conquistas a ON ua.conquista_id = a.id
+     ORDER BY ua.data_ganho DESC
+     LIMIT 20`,
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar feed de conquistas', erro: err });
+      }
+      
+      res.status(200).json({ sucesso: true, dados: rows });
+    }
+  );
+});
+
 // Obter detalhes de uma conquista específica
 app.get('/api/achievements/:id', (req, res) => {
   const achievementId = req.params.id;
   
-  db.query('SELECT * FROM achievements WHERE id = ?', [achievementId], (err, rows) => {
+  db.query('SELECT * FROM conquistas WHERE id = ?', [achievementId], (err, rows) => {
     if (err) {
       return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar conquista', erro: err });
     }
@@ -1040,14 +921,14 @@ app.post('/api/achievements', verificarLogin, (req, res) => {
     }
     
     db.query(
-      'INSERT INTO achievements (title, description, points, badge_image) VALUES (?, ?, ?, ?)',
+      'INSERT INTO conquistas (titulo, descricao, pontos, imagem_recompensa) VALUES (?, ?, ?, ?)',
       [titulo, descricao, pontos, imagem_recompensa],
       (err, result) => {
         if (err) {
           return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar conquista', erro: err });
         }
         
-        db.query('SELECT * FROM achievements WHERE id = ?', [result.insertId], (err, rows) => {
+        db.query('SELECT * FROM conquistas WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) {
             return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar conquista criada', erro: err });
           }
@@ -1065,28 +946,18 @@ app.post('/api/achievements', verificarLogin, (req, res) => {
   }
 });
 
-// Obter últimas conquistas desbloqueadas por todos os usuários (feed público)
-app.get('/api/achievements/feed/recent', (req, res) => {
-  db.query(
-    `SELECT ua.id, ua.date_earned, u.name as user_name, u.profile_image, 
-            a.title as achievement_title, a.description, a.points, a.badge_image
-     FROM user_achievements ua
-     JOIN users u ON ua.user_id = u.id
-     JOIN achievements a ON ua.achievement_id = a.id
-     ORDER BY ua.date_earned DESC
-     LIMIT 20`,
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar feed de conquistas', erro: err });
-      }
-      
-      res.status(200).json({ sucesso: true, dados: rows });
-    }
-  );
+// Por último, inclua as rotas para servir a aplicação frontend
+// Importante que esta rota seja definida APÓS todas as rotas de API
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Rota principal para servir o aplicativo frontend
-app.get('*', (req, res) => {
+app.get('/app', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Para todas as outras rotas não definidas explicitamente, redirecione para a página inicial
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
@@ -1099,9 +970,9 @@ function checkAchievements(userId) {
   // Verificar quantos hábitos foram concluídos no total
   db.query(
     `SELECT COUNT(*) as total_completed 
-     FROM habit_tracking ht 
-     JOIN habits h ON ht.habit_id = h.id 
-     WHERE h.user_id = ? AND ht.completed = 1`,
+     FROM progresso p 
+     JOIN habitos h ON p.habito_id = h.id 
+     WHERE h.usuario_id = ? AND p.quantidade > 0`,
     [userId],
     (err, rows) => {
       if (err || !rows.length) return;
@@ -1121,16 +992,16 @@ function checkAchievements(userId) {
         if (totalCompleted >= milestone.count) {
           // Verificar se o usuário já tem essa conquista
           db.query(
-            `SELECT * FROM user_achievements ua
-             JOIN achievements a ON ua.achievement_id = a.id
-             WHERE ua.user_id = ? AND a.title = ?`,
+            `SELECT * FROM user_conquistas ua
+             JOIN conquistas a ON ua.conquista_id = a.id
+             WHERE ua.usuario_id = ? AND a.titulo = ?`,
             [userId, milestone.title],
             (err, rows) => {
               if (err || rows.length > 0) return; // Já tem ou erro
               
               // Verificar se a conquista existe
               db.query(
-                'SELECT * FROM achievements WHERE title = ?',
+                'SELECT * FROM conquistas WHERE titulo = ?',
                 [milestone.title],
                 (err, achievementRows) => {
                   if (err) return;
@@ -1140,7 +1011,7 @@ function checkAchievements(userId) {
                   if (achievementRows.length === 0) {
                     // Criar a conquista se não existir
                     db.query(
-                      'INSERT INTO achievements (title, description, points) VALUES (?, ?, ?)',
+                      'INSERT INTO conquistas (titulo, descricao, pontos) VALUES (?, ?, ?)',
                       [milestone.title, `Complete ${milestone.count} hábitos`, milestone.points],
                       (err, result) => {
                         if (err || !result.insertId) return;
@@ -1172,16 +1043,16 @@ function checkAchievements(userId) {
              COUNT(*) as consecutive_days
            FROM (
              SELECT 
-               date,
-               @row_num := IF(@prev_date = DATE_SUB(date, INTERVAL 1 DAY), @row_num, @row_num + 1) as group_num,
-               @prev_date := date
+               data,
+               @row_num := IF(@prev_date = DATE_SUB(data, INTERVAL 1 DAY), @row_num, @row_num + 1) as group_num,
+               @prev_date := data
              FROM 
                (
-                 SELECT DISTINCT date
-                 FROM habit_tracking ht
-                 JOIN habits h ON ht.habit_id = h.id
-                 WHERE h.user_id = ? AND ht.completed = 1
-                 ORDER BY date DESC
+                 SELECT DISTINCT data
+                 FROM progresso p
+                 JOIN habitos h ON p.habito_id = h.id
+                 WHERE h.usuario_id = ? AND p.quantidade > 0
+                 ORDER BY data DESC
                ) dates,
                (SELECT @row_num := 0, @prev_date := NULL) vars
            ) grouped
@@ -1208,16 +1079,16 @@ function checkAchievements(userId) {
             if (maxStreak >= milestone.count) {
               // Verificar se o usuário já tem essa conquista
               db.query(
-                `SELECT * FROM user_achievements ua
-                 JOIN achievements a ON ua.achievement_id = a.id
-                 WHERE ua.user_id = ? AND a.title = ?`,
+                `SELECT * FROM user_conquistas ua
+                 JOIN conquistas a ON ua.conquista_id = a.id
+                 WHERE ua.usuario_id = ? AND a.titulo = ?`,
                 [userId, milestone.title],
                 (err, rows) => {
                   if (err || rows.length > 0) return; // Já tem ou erro
                   
                   // Verificar se a conquista existe
                   db.query(
-                    'SELECT * FROM achievements WHERE title = ?',
+                    'SELECT * FROM conquistas WHERE titulo = ?',
                     [milestone.title],
                     (err, achievementRows) => {
                       if (err) return;
@@ -1227,7 +1098,7 @@ function checkAchievements(userId) {
                       if (achievementRows.length === 0) {
                         // Criar a conquista se não existir
                         db.query(
-                          'INSERT INTO achievements (title, description, points) VALUES (?, ?, ?)',
+                          'INSERT INTO conquistas (titulo, descricao, pontos) VALUES (?, ?, ?)',
                           [milestone.title, `Mantenha uma sequência de ${milestone.count} dias`, milestone.points],
                           (err, result) => {
                             if (err || !result.insertId) return;
@@ -1258,16 +1129,16 @@ function checkAchievements(userId) {
 
 // Função para atribuir conquista ao usuário
 function assignAchievement(userId, achievementId, points) {
-  // Inserir na tabela user_achievements
+  // Inserir na tabela user_conquistas
   db.query(
-    'INSERT INTO user_achievements (user_id, achievement_id) VALUES (?, ?)',
+    'INSERT INTO user_conquistas (usuario_id, conquista_id) VALUES (?, ?)',
     [userId, achievementId],
     (err) => {
       if (err) return;
       
       // Adicionar pontos ao usuário
       db.query(
-        'UPDATE users SET points = points + ? WHERE id = ?',
+        'UPDATE usuarios SET pontos = pontos + ? WHERE id = ?',
         [points, userId]
       );
     }

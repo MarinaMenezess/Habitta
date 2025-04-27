@@ -15,7 +15,7 @@ connection.connect((err) => {
     console.error('Erro de conexão ao banco de dados:', err.stack);
     return;
   }
-  console.log('Conectado ao banco de dados com ID ' + connection.threadId);
+  console.log('Conectado ao banco de dados');
 });
 
 // Exportando a conexão para ser usada em outros arquivos
