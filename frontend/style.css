@@ -17,8 +17,10 @@ section {
   width: 80vw;
   height: 90vh;
   margin: 30px auto;
+  overflow-y: auto;
 }
 
+/* cadastro e login */
 .containerCadastroLogin {
   display: flex;
   justify-content: space-around;
@@ -127,6 +129,61 @@ button.login {
   color: #333;
 }
 
+/* temas (preferencias) */
+#preferenciasTitle{
+  color: #2D1674;
+  font-size: 30px;
+  text-align: center;
+  margin-top: 30px;
+}
+
+#preferenciasTitle hr{
+  margin: 0 auto;
+  margin-top: 15px;
+}
+
+.containerPreferencias{
+  display: flex;
+  margin-top: 30px;
+  justify-content: space-around;
+}
+
+.temas{
+  background-color: #D9D9D9;
+  margin-top: 40px;
+  padding: 20px;
+  border-radius: 20px;
+  gap: 10px;
+  display: flex;
+}
+
+.temas input{
+  height: 3vh;
+  width: 3vw;
+  border-color: #2D1674;
+  accent-color: #703ACF;
+  cursor: pointer;
+}
+
+.botaoContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  /* margin-left: 50px; */
+}
+
+#continuarButton {
+  padding: 10px;
+  width: 200px;
+  font-size: 16px;
+  background-color: #2D1674;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* homepage */
 header{
   display: flex;
   justify-content: space-between;
@@ -137,6 +194,19 @@ header{
   display: flex;
   gap: 30px;
   justify-content: center;
+}
+
+.nav-sections {
+  display: flex;
+  align-items: center;
+  padding: 0px 15px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease; /* Adicionando a transição */
+}
+.nav-sections:hover {
+  background-color: #f0f0f0; /* Cor de fundo no hover */
+  transform: scale(1.1); /* Aumenta o tamanho da aba */
 }
 
 .sidebar {
@@ -174,6 +244,11 @@ header{
 
 .new-habit img{
   width: 20%;
+  transition: transform 0.2s ease; /* Adicionando a transição */
+}
+
+.new-habit img :hover{
+  transform: scale(1.1);
 }
 
 .menu{
@@ -195,7 +270,7 @@ header{
   display: flex;
   flex-direction: column;
   width: 55vw;
-  gap: 30px;
+  gap: 15px;
   align-items: center;
 }
 
@@ -270,10 +345,42 @@ header{
 
 .habit-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   background-color: #eee;
   padding: 1rem;
   border-radius: 8px;
+}
+
+.info-check{
+  display: flex;
+  align-items: center;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #eee;
+  border: 2px solid #6f42c1;
+  border-radius: 50%;
+  width: 20px;
+  height: 18px;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #6f42c1;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .habit-info {
@@ -311,6 +418,199 @@ nav div img{
   width: 25px;
 }
 
+/* Modal para cadastrar novo hábito */
+.HabitModal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); 
+}
+
+.modal-habit {
+  background-color: white;
+  width: 70%;  
+  margin: 3% auto; 
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: #2D1674;
+  font-weight: bold;
+  position: relative;
+}
+
+.modal-habit div{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.modal-habit h2{
+  align-self: center;
+}
+
+.modal-habit hr{
+  align-self: center;
+  width: 40%;
+}
+
+.modal-habit input:focus, textarea:focus {
+  outline: 2px solid #4e2d87; 
+  transition: 0.3s ease; 
+  transform: scale(1.05);
+}
+
+.modal-habit select{
+  outline: none;
+}
+
+.modal-habit select:focus, .modal-habit select:active{
+  border: 2px solid #442b74;
+}
+
+.modal-habit input[type="text"],
+.modal-habit input[type="number"],
+.modal-habit select,
+.modal-habit textarea {
+  width: 50%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.modal-habit textarea {
+  height: 60px;
+}
+
+.modal-habit form .campo input{
+  font-weight: lighter;
+  color: #aaa;
+}
+
+.fecharModalHabit {
+  color: #333;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.fecharModalHabit:hover,
+.fecharModalHabit:focus {
+  color: rgb(149, 149, 149);
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.cadastrarHabito{
+  width: 40%;
+  align-self: center;
+  background-color: #2D1674;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cadastrarHabito:hover {
+  background-color: #4e2d87;
+}
+
+/* botões de "editar" e "excluir" hábitos */
+#btnEditHabit, #btnDeleteHabit{
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  gap: 15px; 
+  margin-top: 20px;
+  width: 40%;
+  font-weight: 400;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#btnDeleteHabit{
+  background-color: #5C5C5C;
+  color: white;
+}
+
+#btnEditHabit{
+  background-color: #8065D4;
+  color: white;
+}
+
+#btnEditHabit:hover{
+  background-color: #6f42c1;
+}
+
+#btnDeleteHabit:hover{
+  background-color: #464646;
+}
+
+.habit-buttons{
+  display: flex;
+}
+
+/* Editar Hábito com Modal */
+.HabitEditModal{
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); 
+}
+
+.fecharEditModalHabit {
+  color: #333;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.fecharEditModalHabit:hover,
+.fecharEditModalHabit:focus {
+  color: rgb(149, 149, 149);
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.editarHabito{
+  width: 40%;
+  align-self: center;
+  background-color: #2D1674;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.editarHabito:hover {
+  background-color: #4e2d87;
+}
+
+/* ranking */
 #ranking-main{
   gap: 13px;
 }
@@ -360,7 +660,7 @@ li{
   color:white !important;
   border-radius: 10px;
 }
-
+/* progresso */
 .progress-card{
   background-color: #553CA1;
   width: 30% !important;
@@ -412,6 +712,7 @@ li{
   font-weight: bold;
 }
 
+/* recompensas */
 .recompensa{
   display: flex;
   flex-direction: column;
@@ -443,4 +744,182 @@ li{
 
 .blocked{
   color: #5C5C5C;
+}
+
+/* perfil */
+.containerPerfil{
+  display: flex;
+  padding: 25px;
+  gap: 20px;
+}
+
+.perfil {
+  display: flex;
+  gap: 30px;
+}
+
+#perfilImg{
+  height: 30vh;
+}
+
+.containerPerfil h4{
+  color: #2D1674;
+  font-size: 20px;
+  margin-top: 15px;
+  font-weight: 400;
+}
+
+#btnEdit, #btnDelete{
+  display: flex;
+  gap: 15px; 
+  margin-top: 20px;
+  font-weight: 400;
+}
+#btnEdit{
+  background-color: #703acf;
+  color: white;
+}
+
+#btnDelete{
+  background-color: #5C5C5C;
+  color: white;
+}
+
+#btnEdit:hover{
+  background-color: #4e2d87;
+}
+
+#btnDelete{
+  background-color: #464646;
+}
+
+.profile-info h4{
+  font-weight: bold;
+}
+
+.profile-buttons{
+  display: flex;
+  gap: 15px;
+}
+
+.profile-buttons button{
+  width: 170px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Modal para editar perfil */
+.Modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-perfil {
+  background-color: white;
+  width: 30%; 
+  margin: 15% auto; 
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: #2D1674;
+  font-weight: bold;
+}
+
+.modal-perfil input{
+  width: 20vw;
+  height: 3vh;
+}
+
+.sair {
+  color: #333;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.sair:hover,
+.sair:focus {
+  color: rgb(149, 149, 149);
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.CustomConfirm {
+  padding: 5px;
+  border-radius: 20px;
+  background-color: #4e2d87;
+  border-color: #152e4d;
+  color: white;
+  font-weight: 300;
+  width: 10vw;
+  margin: 0 auto;
+  margin-top: 15px;
+}
+
+#ModifyName {
+  border-radius: 20px;
+  border: 1px solid #9b9b9b;
+  background-color: transparent;
+  color: #2D1674;
+}
+
+#ModifyEmail {
+  border-radius: 20px;
+  border: 1px solid #9b9b9b;
+  background-color: transparent;
+  color: black;
+}
+
+/* Notificações */
+
+.notificacoes{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.notificacoes ul{
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.notificacao{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #eee;
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: 0.2s ease;
+}
+
+.notificacao h3{
+  font-size: 18px;
+  color: #4e2d87;
+}
+
+.notificacao:hover{
+  transform: scale(1.05); /* Aumenta o tamanho da aba */
+}
+
+.nao-visto{
+  background-color: #6f42c1;
+  border-radius: 50%;
+  height: 20px;
+  width: 20px;
 }

@@ -1,55 +1,150 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notificações – Minha Rotina Saudável</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitta - Notificações</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <img src="" alt="">
-        <nav>
-            <a href="habitos.html">Meus Hábitos</a>
-            <a href="sugestoes.html">Sugestões</a>
-            <a href="progresso.html">Progresso</a>
-            <a href="ranking.html">Ranking</a>
-            <a href="recompensas.html">Recompensas</a>
-        </nav>
-        <nav>
-            <a href="perfil.html"><img src="" alt=""></a>
-            <a href="notificacoes.html"><img src="" alt=""></a>
-        </nav>
-    </header>
+  <section>
+  <header>
+    <a href="index.html"><img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="" id="logo"></a>
+    <a href="perfil.html"><img src="./assets/person-circle.svg" alt="" id="perfil"></a>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <button class="new-habit">Criar novo <br> hábito <img src="./assets/add task.png" alt=""></button>
+      <nav class="menu">
+        <div class="nav-sections">
+          <img src="./assets/calendar2-check.svg" alt="">
+          <a href="habitos.html">Meus hábitos</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bar-chart.svg" alt="">
+          <a href="ranking.html">Ranking</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/clipboard-data.svg" alt="">
+          <a href="progresso.html">Meu progresso</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/star-fill.svg" alt="">
+          <a href="recompensas.html">Recompensas</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bell.svg" alt="">
+          <a href="notificacoes.html">Notificações</a>
+        </div>
+      </nav>
+    </aside>
 
-  <main>
-    <section class="notificacoes">
-      <h2>Suas notificações</h2>
-      <ul id="lista-notificacoes">
-        <!-- Lista dinâmica de notificações -->
-        <li>
-          <strong>🔔 Lembrete:</strong> Você ainda não completou o hábito "Beber 2L de água" hoje.
-          <span class="hora">Hoje às 10:00</span>
-        </li>
-        <li>
-          <strong>💡 Dica do dia:</strong> Faça uma pausa de 5 minutos a cada 1 hora de trabalho focado.
-          <span class="hora">Hoje às 08:00</span>
-        </li>
-        <li>
-          <strong>🎉 Parabéns!</strong> Você completou todos os seus hábitos ontem. Continue assim!
-          <span class="hora">Ontem às 20:00</span>
-        </li>
-      </ul>
-    </section>
-  </main>
+    <main class="main-content">
+      <div class="notificacoes">
+        <h2 id="title">Notificações</h2>
+        <hr>
+        <ul>
+          <li class="notificacao">
+            <div class="not-info">
+              <h3>Você atingiu a recompensa <b>'Fez 4 hábitos de Saúde Física'</b>!</h3>
+              <p>2 min</p>
+            </div>
+            <div class="nao-visto"></div>
+          </li>
+          <li class="notificacao">
+            <div class="not-info">
+              <h3>Hora de <b>Autocuidado / Rotina Pessoal</b>!</h3>
+              <p>3h</p>
+            </div>
+            <div class="nao-visto"></div>
+          </li>
+          <li class="notificacao">
+            <div class="not-info">
+              <h3>Você atingiu a recompensa <b>'30 dias seguidos'</b>!</h3>
+              <p>1d</p>
+            </div>
+            <div class="nao-visto"></div>
+          </li>
+        </ul>
+      </div>
 
-  <footer>
-    <p>&copy; 2025 Minha Rotina Saudável</p>
-  </footer>
+       <!-- Modal editar -->
+       <div id="HabitEditModalScreen" class="HabitEditModal">
+        <div class="modal-habit">
+          <span class="fecharEditModalHabit">&times;</span>
+          <h2>Título do hábito</h2>
+          <hr>
+          <form action="">
+            <div class="campo">
+              <label for="descricaoHabitoEdit">Descrição do Hábito:</label>
+              <textarea id="descricaoHabitoEdit" placeholder="Descreva o hábito"></textarea>                
+            </div>    
+            <div class="campo">
+              <label for="metaDiariaEdit">Meta Diária:</label>
+              <input type="number" id="metaDiariaEdit" placeholder="Insira meta diária que será realizado"> 
+            </div>
+            <div class="campo">
+            <label for="recorrenciaEdit">Recorrência:</label>
+            <select id="recorrenciaEdit">
+                <option value="diario">Diário</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensal">Mensal</option>
+            </select> 
+          </form>            
+          </div>
+          <button id="editarHabitoBtn" class="editarHabito">Salvar alterações</button>
+        </div>
+      </div> 
 
-  <script>
-    // Aqui pode ser carregada uma lista de notificações reais via JavaScript
-    // Ex: fetch de uma API ou localStorage
-  </script>
+      <div id="HabitModalScreen" class="HabitModal">
+        <div class="modal-habit">
+            <span class="fecharModalHabit">&times;</span>
+            <h2>Crie um novo hábito:</h2>
+            <hr>
+            <form action="">
+              <div class="campo">
+                <label for="tituloHabito">Título do Hábito:</label>
+                <input type="text" id="tituloHabito" placeholder="Digite o título do hábito">                
+              </div>
+
+              <div class="campo">
+                <label for="descricaoHabito">Descrição do Hábito:</label>
+                <textarea id="descricaoHabito" placeholder="Descreva o hábito"></textarea>                
+              </div>
+
+              <div class="campo">
+                <label for="metaDiaria">Meta Diária:</label>
+                <input type="number" id="metaDiaria" placeholder="Insira meta diária que será realizado" step="1">                
+              </div>
+
+              <div class="campo">
+                <label for="recorrencia">Recorrência:</label>
+                <select id="recorrencia">
+                    <option value="diario">Diário</option>
+                    <option value="semanal">Semanal</option>
+                    <option value="mensal">Mensal</option>
+                </select>                
+              </div>
+
+              <div class="campo">
+                <label for="temaHabito">Tema do Hábito:</label>
+                <select id="temaHabito">
+                    <option value="saudeMental">Saúde e Bem-estar</option>
+                    <option value="saudeFisica">Saúde Física</option>
+                    <option value="produtividade">Produtividade / Desenvolvimento Pessoal</option>
+                    <option value="rotinaPessoal">Autocuidado / Rotina Pessoal</option>
+                    <option value="trabalhoEstudo">Trabalho / Estudo</option>
+                    <option value="financasPessoais">Finanças Pessoais</option>
+                </select>                
+              </div>
+            </form>
+            <button id="cadastrarHabito" class="cadastrarHabito" onclick="cadastrarHabito(event)">Cadastrar hábito</button>
+        </div>
+    </div>
+    </main>
+  </div>
+  </section>
+  <script src="index.js"></script>
 </body>
 </html>

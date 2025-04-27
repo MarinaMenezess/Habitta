@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitta - Meu perfil </title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="./assets/habitta-high-resolution-logo (1) 1.png">
+</head>
+<body>
+  <section>
+  <header>
+    <a href="index.html"><img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="" id="logo"></a>
+    <a href="perfil.html"><img src="./assets/person-circle.svg" alt="" id="perfil"></a>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <button class="new-habit">Criar novo <br> hábito <img src="./assets/add task.png" alt=""></button>
+      <nav class="menu">
+        <div class="nav-sections">
+          <img src="./assets/calendar2-check.svg" alt="">
+          <a href="habitos.html">Meus hábitos</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/bar-chart.svg" alt="">
+          <a href="ranking.html">Ranking</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/clipboard-data.svg" alt="">
+          <a href="progresso.html">Meu progresso</a>
+        </div>
+        <div class="nav-sections">
+          <img src="./assets/star-fill.svg" alt="">
+          <a href="recompensas.html">Recompensas</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1 id="title">Seu Perfil</h1>
+      <hr>
+        <div class="containerPerfil">
+            <div class="perfil">
+                <img src="./assets/person-circle.svg" id="perfilImg">
+                <div class="dados">
+                    <div class="profile-info">
+                        <h4>Nome:</h4>
+                        <p>[Nome do Usuário]</p>
+                    </div>
+                    <div class="profile-info">
+                        <h4>Email:</h4>
+                        <p>[Email do Usuário]</p>
+                    </div>
+                    <div class="profile-buttons">
+                        <button type="button" id="btnEdit" onclick="editarPerfil()">Editar Perfil<img src="./assets/pen-fill.svg"></button>
+                        <button type="button" id="btnDelete" onclick="deletarPerfil()">Excluir Perfil<img src="./assets/trash3-fill.svg"></button>
+                    </div>  
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Modal editar -->
+       <div id="HabitEditModalScreen" class="HabitEditModal">
+        <div class="modal-habit">
+          <span class="fecharEditModalHabit">&times;</span>
+          <h2>Título do hábito</h2>
+          <hr>
+          <form action="">
+            <div class="campo">
+              <label for="descricaoHabitoEdit">Descrição do Hábito:</label>
+              <textarea id="descricaoHabitoEdit" placeholder="Descreva o hábito"></textarea>                
+            </div>    
+            <div class="campo">
+              <label for="metaDiariaEdit">Meta Diária:</label>
+              <input type="number" id="metaDiariaEdit" placeholder="Insira meta diária que será realizado"> 
+            </div>
+            <div class="campo">
+            <label for="recorrenciaEdit">Recorrência:</label>
+            <select id="recorrenciaEdit">
+                <option value="diario">Diário</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensal">Mensal</option>
+            </select> 
+          </form>            
+          </div>
+          <button id="editarHabitoBtn" class="editarHabito">Salvar alterações</button>
+        </div>
+      </div> 
+
+      <div id="HabitModalScreen" class="HabitModal">
+        <div class="modal-habit">
+            <span class="fecharModalHabit">&times;</span>
+            <h2>Crie um novo hábito:</h2>
+            <hr>
+            <form action="">
+              <div class="campo">
+                <label for="tituloHabito">Título do Hábito:</label>
+                <input type="text" id="tituloHabito" placeholder="Digite o título do hábito">                
+              </div>
+
+              <div class="campo">
+                <label for="descricaoHabito">Descrição do Hábito:</label>
+                <textarea id="descricaoHabito" placeholder="Descreva o hábito"></textarea>                
+              </div>
+
+              <div class="campo">
+                <label for="metaDiaria">Meta Diária:</label>
+                <input type="number" id="metaDiaria" placeholder="Insira meta diária que será realizado" step="1">                
+              </div>
+
+              <div class="campo">
+                <label for="recorrencia">Recorrência:</label>
+                <select id="recorrencia">
+                    <option value="diario">Diário</option>
+                    <option value="semanal">Semanal</option>
+                    <option value="mensal">Mensal</option>
+                </select>                
+              </div>
+
+              <div class="campo">
+                <label for="temaHabito">Tema do Hábito:</label>
+                <select id="temaHabito">
+                    <option value="saudeMental">Saúde e Bem-estar</option>
+                    <option value="saudeFisica">Saúde Física</option>
+                    <option value="produtividade">Produtividade / Desenvolvimento Pessoal</option>
+                    <option value="rotinaPessoal">Autocuidado / Rotina Pessoal</option>
+                    <option value="trabalhoEstudo">Trabalho / Estudo</option>
+                    <option value="financasPessoais">Finanças Pessoais</option>
+                </select>                
+              </div>
+            </form>
+            <button id="cadastrarHabito" class="cadastrarHabito" onclick="cadastrarHabito(event)">Cadastrar hábito</button>
+        </div>
+    </div>  
+</main>
+  </section>
+  <script src="./perfil.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

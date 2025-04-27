@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jaldi:wght@400;700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link rel="icon" href="./assets/habitta-high-resolution-logo (1) 1.png">
+  <link rel="stylesheet" href="./style.css">
+  <title>Habitta</title>
+</head>
+<body>
+  <section>
+    <img src="./assets/habitta-high-resolution-logo-removebg-preview.png" id="logo">
+    <div id="preferenciasTitle">
+        <h1>Selecione abaixo suas principais<br>preferencias</h1>
+        <hr>
+    </div>     
+    <div class="containerPreferencias">
+        <div>
+            <div class="temas">
+                <input type="radio" class="radio" name="saudeMental" id="saudeMental">
+                <label for="saudeMental">🧠 Saúde Mental e Bem-estar</label>
+            </div>
+
+            <div class="temas">
+                <input type="radio" class="radio" name="saudeFisica" id="saudeFisica">
+                <label for="saudeFisica">🏋️‍♂️ Saúde Física</label>
+            </div>
+
+            <div class="temas">
+                <input type="radio" class="radio" name="produtividade" id="produtividade">
+                <label for="produtividade">📚 Produtividade / Desenvolvimento Pessoal</label>
+            </div>
+        </div>
+
+        <div>
+            <div class="temas">
+                <input type="radio" class="radio" name="rotinaPessoal" id="rotinaPessoal">
+                <label for="rotinaPessoal">🧼 Autocuidado / Rotina Pessoal</label>
+            </div>
+
+            <div class="temas">
+                <input type="radio" class="radio" name="trabalhoEstudo" id="trabalhoEstudo">
+                <label for="trabalhoEstudo">💼 Trabalho / Estudo</label>
+            </div>
+
+            <div class="temas">
+                <input type="radio" class="radio" name="financasPessoais" id="financasPessoais">
+                <label for="financasPessoais">🧾 Finanças Pessoais</label>
+            </div>
+        </div>
+    </div>
+    <div class="botaoContainer">
+        <button id="continuarButton" style="display: none;">Continuar</button>
+    </div>
+  </section>
+  <script src="cadastro.js"></script>
+</body>
+</html>
