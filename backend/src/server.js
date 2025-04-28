@@ -249,7 +249,7 @@ app.post('/api/habits', verificarLogin, (req, res) => {
 // Listar hábitos do usuário
 app.get('/api/habits', verificarLogin, (req, res) => {
   db.query(
-    'SELECT * FROM habitos WHERE usuario_id = ? ORDER BY data_criacao DESC',
+    'SELECT * FROM habitos WHERE usuario_id = ? ORDER BY criado_em DESC',
     [req.usuario.id],
     (err, rows) => {
       if (err) {
@@ -294,9 +294,8 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
           
           // Obter sequência atual
           db.query(
-            `SELECT usuario_id, MAX(streak) as current_streak FROM (
+            `SELECT MAX(streak) as current_streak FROM (
               SELECT 
-                h.usuario_id,
                 DATEDIFF(@curr_date, data) - 
                   IF(@prev_completed = 1, 
                      DATEDIFF(@curr_date, @prev_date), 0) as streak,
@@ -559,6 +558,87 @@ app.get('/api/habits/:id/history', verificarLogin, (req, res) => {
 //===================================================
 // ROTAS DE LEMBRETES
 //===================================================
+
+// Criar novo lembrete
+app.post('/api/reminders', verificarLogin, (req, res) => {
+  try {
+    const { habito_id, time, days, message } = req.body;
+    
+    if (!habito_id || !time) {
+      return res.status(400).json({ 
+        sucesso: false, 
+        mensagem: 'ID do hábito e horário são obrigatórios' 
+      });
+    }
+    
+    // Verificar se o hábito pertence ao usuário
+    db.query(
+      'SELECT * FROM habitos WHERE id = ? AND usuario_id = ?',
+      [habito_id, req.usuario.id],
+      (err, rows) => {
+        if (err) {
+          return res.status(500).json({ 
+            sucesso: false, 
+            mensagem: 'Erro ao verificar hábito', 
+            erro: err 
+          });
+        }
+        
+        if (rows.length === 0) {
+          return res.status(404).json({ 
+            sucesso: false, 
+            mensagem: 'Hábito não encontrado' 
+          });
+        }
+        
+        // Inserir o lembrete
+        db.query(
+          'INSERT INTO reminders (habito_id, time, days, message, active) VALUES (?, ?, ?, ?, true)',
+          [habito_id, time, days || '1,2,3,4,5,6,7', message || `Lembrete para ${rows[0].titulo}`],
+          (err, result) => {
+            if (err) {
+              return res.status(500).json({ 
+                sucesso: false, 
+                mensagem: 'Erro ao criar lembrete', 
+                erro: err 
+              });
+            }
+            
+            // Buscar o lembrete criado
+            db.query(
+              `SELECT r.*, h.titulo as habit_title 
+               FROM reminders r 
+               JOIN habitos h ON r.habito_id = h.id 
+               WHERE r.id = ?`,
+              [result.insertId],
+              (err, rows) => {
+                if (err) {
+                  return res.status(500).json({ 
+                    sucesso: false, 
+                    mensagem: 'Erro ao buscar lembrete criado', 
+                    erro: err 
+                  });
+                }
+                
+                res.status(201).json({ 
+                  sucesso: true, 
+                  mensagem: 'Lembrete criado com sucesso', 
+                  dados: rows[0] 
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ 
+      sucesso: false, 
+      mensagem: 'Erro no servidor', 
+      erro: error.message 
+    });
+  }
+});
 
 app.get('/api/reminders', verificarLogin, (req, res) => {
   db.query(
@@ -874,7 +954,7 @@ app.get('/api/achievements/progress', verificarLogin, (req, res) => {
 // Obter últimas conquistas desbloqueadas por todos os usuários (feed público) - MOVIDA PARA ANTES DA ROTA COM :id
 app.get('/api/achievements/feed/recent', (req, res) => {
   db.query(
-    `SELECT ua.id, ua.data_ganho, u.nome as user_name, u.foto_perfil, 
+    `SELECT ua.id, ua.data_ganho, u.nome as user_name, 
             a.titulo as achievement_title, a.descricao, a.pontos, a.imagem_recompensa
      FROM user_conquistas ua
      JOIN usuarios u ON ua.usuario_id = u.id

@@ -4,7 +4,8 @@ CREATE TABLE usuarios (
   nome VARCHAR(100),
   email VARCHAR(100) UNIQUE,
   senha_hash VARCHAR(255),
-  data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
+  data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+  pontos INT DEFAULT 0
 );
 
 -- TABELA: Temas (interesses do usuário)
@@ -80,4 +81,34 @@ CREATE TABLE notificacoes (
   data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
   visualizado BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- TABELA: Lembretes para hábitos
+CREATE TABLE reminders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  habito_id INT,
+  time TIME NOT NULL,
+  days VARCHAR(50),
+  message TEXT,
+  active BOOLEAN DEFAULT TRUE,
+  FOREIGN KEY (habito_id) REFERENCES habitos(id) ON DELETE CASCADE
+);
+
+-- TABELA: Conquistas
+CREATE TABLE conquistas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  titulo VARCHAR(100) NOT NULL,
+  descricao TEXT,
+  pontos INT NOT NULL,
+  imagem_recompensa VARCHAR(255)
+);
+
+-- TABELA: Conquistas dos usuários
+CREATE TABLE user_conquistas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  conquista_id INT,
+  data_ganho DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  FOREIGN KEY (conquista_id) REFERENCES conquistas(id) ON DELETE CASCADE
 );

@@ -1,0 +1,412 @@
+{
+  "info": {
+    "name": "Habitta API",
+    "description": "Exemplos para testar todas as rotas da API Habitta",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Usuários",
+      "item": [
+        {
+          "name": "Cadastro de usuário",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Silva\",\n  \"email\": \"maria@exemplo.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login de usuário",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria@exemplo.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Obter perfil do usuário",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/users/me",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Atualizar perfil do usuário",
+          "request": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/users/me",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Silva Atualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Obter ranking de usuários",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/users/ranking"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Hábitos",
+      "item": [
+        {
+          "name": "Criar novo hábito",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/habits",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Beber 2L de água\",\n  \"descricao\": \"Beber água regularmente para manter-se hidratado\",\n  \"meta_diaria\": 8,\n  \"recorrencia\": \"diario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar hábitos do usuário",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/habits",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Obter estatísticas do usuário",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/habits/stats/summary",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Obter detalhes de um hábito",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/habits/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Atualizar hábito",
+          "request": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/habits/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Beber 2L de água\",\n  \"descricao\": \"Beber água regularmente para manter-se hidratado e saudável\",\n  \"meta_diaria\": 10,\n  \"recorrencia\": \"diario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir hábito",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/habits/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Marcar hábito como concluído",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/habits/1/track",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": \"2023-10-25\",\n  \"quantidade\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Obter histórico de um hábito",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/habits/1/history?start_date=2023-10-01&end_date=2023-10-31",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Lembretes",
+      "item": [
+        {
+          "name": "Criar novo lembrete",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/reminders",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habito_id\": 1,\n  \"time\": \"07:30:00\",\n  \"days\": \"1,2,3,4,5\",\n  \"message\": \"Hora de praticar seu hábito!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar todos os lembretes",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/reminders",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Listar lembretes de um hábito",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/reminders/habit/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Obter detalhes de um lembrete",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/reminders/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Atualizar lembrete",
+          "request": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/reminders/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time\": \"08:00:00\",\n  \"days\": \"1,2,3,4,5\",\n  \"message\": \"Hora de beber água!\",\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir lembrete",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/reminders/1",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Ativar/desativar lembrete",
+          "request": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/reminders/1/toggle",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Conquistas",
+      "item": [
+        {
+          "name": "Listar todas as conquistas",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/achievements"
+          }
+        },
+        {
+          "name": "Listar conquistas do usuário",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/achievements/user",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Obter progresso das conquistas",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/achievements/progress",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Obter feed de conquistas recentes",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/achievements/feed/recent"
+          }
+        },
+        {
+          "name": "Obter detalhes de uma conquista",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/achievements/1"
+          }
+        },
+        {
+          "name": "Criar nova conquista (admin)",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/achievements",
+            "header": [
+              {
+                "key": "user-id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Super Consistente\",\n  \"descricao\": \"Complete 50 hábitos em um mês\",\n  \"pontos\": 500,\n  \"imagem_recompensa\": \"trofeu_ouro.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+} 
