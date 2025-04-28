@@ -1,42 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jaldi:wght@400;700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jaldi:wght@400;700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
-  <title>Habitta</title>
+  <title>Habitta - Login</title>
 </head>
 <body>
   <section>
-    <img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="">
+    <img src="./assets/habitta-high-resolution-logo-removebg-preview.png" alt="Logo Habitta">
     <div class="containerCadastroLogin">
-      <img src="./assets/image login cadastro.png" alt="">
+      <img src="./assets/image login cadastro.png" alt="Imagem de Login">
       <div class="form">
         <div>
-        <h1>Crie uma conta</h1>
-        <hr>          
+          <h1>Login</h1>
+          <hr>          
         </div>
-
 
         <div class="campo">
           <input type="email" id="email" name="email" required placeholder=" " />
-          <label for="nome">Email:</label>
+          <label for="email">Email:</label>
         </div> 
 
         <div class="campo">
           <input type="password" id="senha" name="senha" required placeholder=" " />
-          <label for="email">Senha:</label>
+          <label for="senha">Senha:</label>
         </div> 
         <div class="botoes">
-          <button type="submit" class="confirmar" onclick="cadastrar(event)">Confirmar</button>
-          <button type="button" class="faça o login">Faça o cadastro</button>
+          <button type="submit" class="confirmar">Entrar</button>
+          <button type="button" class="login-btn">Criar uma conta</button>
         </div>
       </div>
     </div>
   </section>
+  <script src="login.js"></script>
 </body>
 </html>
 

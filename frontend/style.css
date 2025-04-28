@@ -531,7 +531,7 @@ nav div img{
 }
 
 /* botões de "editar" e "excluir" hábitos */
-#btnEditHabit, #btnDeleteHabit{
+#btnEditHabit, #btnDeleteHabit, .btn-edit-habit, .btn-delete-habit {
   display: flex;
   margin: 0 auto;
   justify-content: center;
@@ -542,26 +542,33 @@ nav div img{
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-#btnDeleteHabit{
+#btnDeleteHabit, .btn-delete-habit {
   background-color: #5C5C5C;
   color: white;
 }
 
-#btnEditHabit{
+#btnEditHabit, .btn-edit-habit {
   background-color: #8065D4;
   color: white;
 }
 
-#btnEditHabit:hover{
+#btnEditHabit:hover, .btn-edit-habit:hover {
   background-color: #6f42c1;
 }
 
-#btnDeleteHabit:hover{
+#btnDeleteHabit:hover, .btn-delete-habit:hover {
   background-color: #464646;
 }
 
-.habit-buttons{
+.btn-edit-habit img, .btn-delete-habit img {
+  filter: brightness(0) invert(1);
+  width: 20px;
+  height: 20px;
+}
+
+.habit-buttons {
   display: flex;
+  gap: 10px;
 }
 
 /* Editar Hábito com Modal */
@@ -922,4 +929,72 @@ li{
   border-radius: 50%;
   height: 20px;
   width: 20px;
+}
+
+/* Estilos para mensagens de feedback */
+.mensagem {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  font-weight: 500;
+  animation: fadeInSlide 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.mensagem:hover {
+  transform: translateY(-3px);
+}
+
+.mensagem.sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border-left: 5px solid #28a745;
+}
+
+.mensagem.sucesso::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(21, 87, 36, 0.05), rgba(40, 167, 69, 0.15));
+  animation: pulse 2.5s infinite ease-in-out;
+  z-index: -1;
+}
+
+.mensagem.erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left: 5px solid #dc3545;
+}
+
+@keyframes fadeInSlide {
+  from { 
+    opacity: 0; 
+    transform: translateY(-20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes pulse {
+  0% {
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+  50% {
+    background-color: rgba(40, 167, 69, 0.25);
+  }
+  100% {
+    background-color: rgba(40, 167, 69, 0.1);
+  }
 }

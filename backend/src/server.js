@@ -166,17 +166,26 @@ app.get('/api/users/me', verificarLogin, (req, res) => {
 
 // Atualizar perfil do usuário
 app.put('/api/users/me', verificarLogin, (req, res) => {
-  const { nome } = req.body;
+  const { nome, pontos } = req.body;
   let updateFields = [];
   let queryParams = [];
+  
   if (nome) {
     updateFields.push('nome = ?');
     queryParams.push(nome);
   }
+  
+  if (pontos !== undefined) {
+    updateFields.push('pontos = ?');
+    queryParams.push(pontos);
+  }
+  
   if (updateFields.length === 0) {
     return res.status(400).json({ sucesso: false, mensagem: 'Nenhum campo para atualizar' });
   }
+  
   queryParams.push(req.usuario.id);
+  
   db.query(
     `UPDATE usuarios SET ${updateFields.join(', ')} WHERE id = ?`,
     queryParams,
@@ -184,13 +193,15 @@ app.put('/api/users/me', verificarLogin, (req, res) => {
       if (err) {
         return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar usuário', erro: err });
       }
+      
       db.query(
-        'SELECT id, nome, email, data_criacao FROM usuarios WHERE id = ?',
+        'SELECT id, nome, email, pontos, data_criacao FROM usuarios WHERE id = ?',
         [req.usuario.id],
         (err, rows) => {
           if (err) {
             return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar usuário atualizado', erro: err });
           }
+          
           res.status(200).json({ sucesso: true, mensagem: 'Perfil atualizado com sucesso', dados: rows[0] });
         }
       );
