@@ -53,20 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCadastrarHabito.addEventListener('click', cadastrarHabito);
     }
     
-    // Adicionar função de logout
+    // Configurar função de perfil (ícone de perfil)
     const perfilBtn = document.getElementById('perfil');
     if (perfilBtn) {
         perfilBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm('Deseja sair da sua conta?')) {
-                localStorage.removeItem('usuario');
-                localStorage.removeItem('usuarioId');
-                localStorage.removeItem('usuarioNome');
-                localStorage.removeItem('usuarioEmail');
-                window.location.href = 'login.html';
-            }
+            // Não fazer nada especial, deixar o link navegar normalmente para a página de perfil
+            // O comportamento padrão de navegação será mantido
         });
     }
+
+    // Atualizar o indicador de notificações
+    atualizarIndicadorNotificacoes();
 });
 
 const inputMetaDiaria = document.getElementById('metaDiaria');
@@ -592,7 +589,47 @@ function deletarHabito(habitoId) {
     });
 }
 
-// Função para marcar um hábito como concluído
+// Função para gerar um ID único para as notificações
+function gerarIdUnico() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+// Função para adicionar uma notificação
+function adicionarNotificacao(mensagem, tipo = 'info') {
+    // Obter o array de notificações existente
+    let notificacoes = JSON.parse(localStorage.getItem('notificacoes') || '[]');
+    
+    // Criar nova notificação
+    const novaNotificacao = {
+        id: gerarIdUnico(),
+        mensagem: mensagem,
+        tipo: tipo,
+        data: new Date(),
+        lida: false
+    };
+    
+    // Adicionar no início do array (para aparecer primeiro)
+    notificacoes.unshift(novaNotificacao);
+    
+    // Limitar a 50 notificações para não sobrecarregar o localStorage
+    if (notificacoes.length > 50) {
+        notificacoes = notificacoes.slice(0, 50);
+    }
+    
+    // Salvar no localStorage
+    localStorage.setItem('notificacoes', JSON.stringify(notificacoes));
+    
+    console.log('Notificação adicionada:', novaNotificacao);
+    
+    // Se estivermos na página de notificações, atualizar a visualização
+    if (window.location.pathname.includes('notificacoes.html')) {
+        carregarNotificacoes();
+    }
+    
+    return novaNotificacao;
+}
+
+// Função para marcar um hábito como concluído - versão modificada
 function marcarHabitoComoConcluido(habitoId, concluido) {
     const usuarioData = localStorage.getItem('usuario');
     if (!usuarioData) {
@@ -602,44 +639,133 @@ function marcarHabitoComoConcluido(habitoId, concluido) {
     
     const usuario = JSON.parse(usuarioData);
     
-    fetch(`http://localhost:3000/api/habits/${habitoId}/track`, {
-        method: 'POST',
+    // Primeiro, buscar informações do hábito
+    fetch(`http://localhost:3000/api/habits/${habitoId}`, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'user-id': usuario.id
-        },
-        body: JSON.stringify({
-            quantidade: concluido ? 1 : 0
-        })
+        }
     })
     .then(response => response.json())
-    .then(data => {
-        if (data.sucesso) {
-            // Após registrar o progresso, atualizar os pontos do usuário localmente
-            if (concluido) {
-                // Adicionar 10 pontos ao concluir o hábito
-                usuario.pontos = (parseInt(usuario.pontos) || 0) + 10;
-            } else {
-                // Remover 10 pontos ao desmarcar o hábito (garantindo que não fique negativo)
-                usuario.pontos = Math.max(0, (parseInt(usuario.pontos) || 0) - 10);
-            }
+    .then(habitoData => {
+        if (habitoData.sucesso) {
+            const habito = habitoData.dados;
             
-            // Atualizar o localStorage
-            localStorage.setItem('usuario', JSON.stringify(usuario));
-            
-            // Chamar a função que atualiza pontução do usuário no banco de dados
-            atualizarPontuacaoUsuario(usuario.id, usuario.pontos);
-            
-            // Recarregar a interface com os novos dados
-            carregarDadosUsuario();
-            carregarHabitos();
+            // Agora marcar como concluído
+            fetch(`http://localhost:3000/api/habits/${habitoId}/track`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'user-id': usuario.id
+                },
+                body: JSON.stringify({
+                    quantidade: concluido ? 1 : 0
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Após registrar o progresso, atualizar os pontos do usuário localmente
+                    if (concluido) {
+                        // Adicionar 10 pontos ao concluir o hábito
+                        usuario.pontos = (parseInt(usuario.pontos) || 0) + 10;
+                        
+                        // Adicionar notificação
+                        adicionarNotificacao(`Parabéns! Você concluiu o hábito <b>'${habito.titulo}'</b> e ganhou 10 pontos!`, 'sucesso');
+                        
+                        // Verificar se atingiu alguma meta especial
+                        verificarMetas(usuario.id, habito);
+                    } else {
+                        // Remover 10 pontos ao desmarcar o hábito (garantindo que não fique negativo)
+                        usuario.pontos = Math.max(0, (parseInt(usuario.pontos) || 0) - 10);
+                    }
+                    
+                    // Atualizar o localStorage
+                    localStorage.setItem('usuario', JSON.stringify(usuario));
+                    
+                    // Chamar a função que atualiza pontução do usuário no banco de dados
+                    atualizarPontuacaoUsuario(usuario.id, usuario.pontos);
+                    
+                    // Recarregar a interface com os novos dados
+                    carregarDadosUsuario();
+                    carregarHabitos();
+                } else {
+                    alert('Erro ao atualizar progresso: ' + data.mensagem);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar progresso:', error);
+                alert('Erro ao atualizar progresso. Tente novamente mais tarde.');
+            });
         } else {
-            alert('Erro ao atualizar progresso: ' + data.mensagem);
+            console.error('Erro ao buscar informações do hábito:', habitoData.mensagem);
         }
     })
     .catch(error => {
-        console.error('Erro ao atualizar progresso:', error);
-        alert('Erro ao atualizar progresso. Tente novamente mais tarde.');
+        console.error('Erro ao buscar informações do hábito:', error);
+    });
+}
+
+// Função para verificar se o usuário atingiu alguma meta especial
+function verificarMetas(usuarioId, habito) {
+    // Simular verificação de metas
+    // Na implementação real, isso chamaria uma API para verificar metas
+    
+    // Verificar quantos hábitos o usuário completou do mesmo tema
+    fetch(`http://localhost:3000/api/habits/stats/by-theme`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'user-id': usuarioId
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso && data.dados) {
+            const estatisticas = data.dados;
+            
+            // Se o usuário completou 4 hábitos do mesmo tema
+            const temaHabito = habito.tema || 'saudeFisica'; // Exemplo, substitua pelo campo correto
+            if (estatisticas[temaHabito] && estatisticas[temaHabito].concluidos >= 4) {
+                // Converter o nome interno do tema para um nome mais amigável
+                let temaNome = temaHabito;
+                switch(temaHabito) {
+                    case 'saudeMental': temaNome = 'Saúde e Bem-estar'; break;
+                    case 'saudeFisica': temaNome = 'Saúde Física'; break;
+                    case 'produtividade': temaNome = 'Produtividade / Desenvolvimento Pessoal'; break;
+                    case 'rotinaPessoal': temaNome = 'Autocuidado / Rotina Pessoal'; break;
+                    case 'trabalhoEstudo': temaNome = 'Trabalho / Estudo'; break;
+                    case 'financasPessoais': temaNome = 'Finanças Pessoais'; break;
+                }
+                
+                adicionarNotificacao(`Você atingiu a recompensa <b>'Fez 4 hábitos de ${temaNome}'</b>!`, 'conquista');
+                
+                // Adicionar pontos extras pela conquista
+                const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+                if (usuario.id) {
+                    usuario.pontos = (parseInt(usuario.pontos) || 0) + 50;
+                    localStorage.setItem('usuario', JSON.stringify(usuario));
+                    atualizarPontuacaoUsuario(usuario.id, usuario.pontos);
+                }
+            }
+            
+            // Verificar sequência de dias
+            if (estatisticas.sequencia_atual >= 30) {
+                adicionarNotificacao(`Você atingiu a recompensa <b>'30 dias seguidos'</b>!`, 'conquista');
+                
+                // Adicionar pontos extras pela conquista
+                const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+                if (usuario.id) {
+                    usuario.pontos = (parseInt(usuario.pontos) || 0) + 100;
+                    localStorage.setItem('usuario', JSON.stringify(usuario));
+                    atualizarPontuacaoUsuario(usuario.id, usuario.pontos);
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao verificar estatísticas por tema:', error);
     });
 }
 
@@ -665,6 +791,34 @@ function atualizarPontuacaoUsuario(usuarioId, pontos) {
     })
     .catch(error => {
         console.error('Erro ao atualizar pontuação no servidor:', error);
+    });
+}
+
+// Função para atualizar o indicador de notificações
+function atualizarIndicadorNotificacoes() {
+    // Buscar notificações no localStorage
+    const notificacoes = JSON.parse(localStorage.getItem('notificacoes') || '[]');
+    
+    // Contar notificações não lidas
+    const naoLidas = notificacoes.filter(n => !n.lida).length;
+    
+    // Buscar elementos de notificação em todos os links do menu
+    const linksNotificacao = document.querySelectorAll('a[href="notificacoes.html"]');
+    
+    linksNotificacao.forEach(link => {
+        // Remover contador anterior, se existir
+        const contador = link.querySelector('.contador-notificacoes');
+        if (contador) {
+            contador.remove();
+        }
+        
+        // Adicionar contador se houver notificações não lidas
+        if (naoLidas > 0) {
+            const span = document.createElement('span');
+            span.className = 'contador-notificacoes';
+            span.textContent = naoLidas > 9 ? '9+' : naoLidas;
+            link.appendChild(span);
+        }
     });
 }
 

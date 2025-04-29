@@ -41,18 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCadastrarHabito.addEventListener('click', cadastrarHabito);
     }
 
-    // Configurar função de logout (ícone de perfil)
+    // Configurar função de perfil (ícone de perfil)
     const perfilBtn = document.getElementById('perfil');
     if (perfilBtn) {
         perfilBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm('Deseja sair da sua conta?')) {
-                localStorage.removeItem('usuario');
-                localStorage.removeItem('usuarioId');
-                localStorage.removeItem('usuarioNome');
-                localStorage.removeItem('usuarioEmail');
-                window.location.href = 'login.html';
-            }
+            // Não fazer nada especial, deixar o link navegar normalmente para a página de perfil
+            // O comportamento padrão de navegação será mantido
         });
     }
 

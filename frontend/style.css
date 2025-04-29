@@ -264,6 +264,7 @@ header{
   text-decoration: none;
   font-weight: 600;
   font-size: 13px;
+  position: relative;
 }
 
 .main-content {
@@ -806,13 +807,32 @@ li{
 
 .profile-buttons{
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .profile-buttons button{
-  width: 170px;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#btnLogout {
+  background-color: #707070;
+}
+
+#btnEdit:hover{
+  filter: brightness(0.8);
+}
+
+#btnDelete:hover, #btnLogout:hover{
+  filter: brightness(0.8);
 }
 
 /* Modal para editar perfil */
@@ -909,19 +929,32 @@ li{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #eee;
-  border-radius: 8px;
-  padding: 10px 20px;
-  transition: 0.2s ease;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: #f7f7f7;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.notificacao-vazia {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  border-radius: 15px;
+  background-color: #f7f7f7;
+  margin-bottom: 15px;
+  font-style: italic;
+  color: #777;
+}
+
+.notificacao:hover{
+  filter: brightness(0.97);
 }
 
 .notificacao h3{
   font-size: 18px;
   color: #4e2d87;
-}
-
-.notificacao:hover{
-  transform: scale(1.05); /* Aumenta o tamanho da aba */
 }
 
 .nao-visto{
@@ -997,4 +1030,36 @@ li{
   100% {
     background-color: rgba(40, 167, 69, 0.1);
   }
+}
+
+.contador-notificacoes {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff5555;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+#marcarTodasLidas {
+    background-color: #4e2d87;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+#marcarTodasLidas:hover {
+    background-color: #3a2169;
 }

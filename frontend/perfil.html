@@ -57,8 +57,9 @@
                         <p>[Email do Usuário]</p>
                     </div>
                     <div class="profile-buttons">
-                        <button type="button" id="btnEdit" onclick="editarPerfil()">Editar Perfil<img src="./assets/pen-fill.svg"></button>
-                        <button type="button" id="btnDelete" onclick="deletarPerfil()">Excluir Perfil<img src="./assets/trash3-fill.svg"></button>
+                        <button type="button" id="btnEdit">Editar Perfil<img src="./assets/pen-fill.svg"></button>
+                        <button type="button" id="btnDelete">Excluir Perfil<img src="./assets/trash3-fill.svg"></button>
+                        <button type="button" id="btnLogout">Sair da Conta<img src="./assets/box-arrow-right.svg"></button>
                     </div>  
                 </div>
             </div>
@@ -152,6 +153,24 @@
 </main>
   </section>
   <script src="./perfil.js"></script>
-  <script src="index.js"></script>
+  <script>
+    // Verificação imediata do usuário após o carregamento
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tentar atualizar os dados de perfil imediatamente
+      const usuarioData = localStorage.getItem('usuario');
+      if (usuarioData) {
+        try {
+          const usuario = JSON.parse(usuarioData);
+          const nomeElement = document.querySelector('.profile-info:nth-child(1) p');
+          const emailElement = document.querySelector('.profile-info:nth-child(2) p');
+          
+          if (nomeElement) nomeElement.textContent = usuario.nome || "[Nome não disponível]";
+          if (emailElement) emailElement.textContent = usuario.email || "[Email não disponível]";
+        } catch (e) {
+          console.error("Erro ao carregar dados iniciais:", e);
+        }
+      }
+    });
+  </script>
 </body>
 </html>

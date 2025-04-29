@@ -166,7 +166,7 @@ app.get('/api/users/me', verificarLogin, (req, res) => {
 
 // Atualizar perfil do usuário
 app.put('/api/users/me', verificarLogin, (req, res) => {
-  const { nome, pontos } = req.body;
+  const { nome, email, pontos } = req.body;
   let updateFields = [];
   let queryParams = [];
   
@@ -175,38 +175,134 @@ app.put('/api/users/me', verificarLogin, (req, res) => {
     queryParams.push(nome);
   }
   
+  if (email) {
+    // Verificar se o email já está sendo usado por outro usuário
+    db.query('SELECT id FROM usuarios WHERE email = ? AND id != ?', [email, req.usuario.id], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao verificar email', erro: err });
+      }
+      
+      if (rows.length > 0) {
+        return res.status(409).json({ sucesso: false, mensagem: 'Este email já está sendo usado por outro usuário' });
+      }
+      
+      // Email não está em uso, podemos atualizar
+      updateFields.push('email = ?');
+      queryParams.push(email);
+      
+      continueUpdate();
+    });
+    return; // Aguardar verificação assíncrona
+  }
+  
   if (pontos !== undefined) {
     updateFields.push('pontos = ?');
     queryParams.push(pontos);
   }
   
-  if (updateFields.length === 0) {
-    return res.status(400).json({ sucesso: false, mensagem: 'Nenhum campo para atualizar' });
+  // Se não temos que verificar o email, continuamos direto
+  if (!email) {
+    continueUpdate();
   }
   
-  queryParams.push(req.usuario.id);
-  
-  db.query(
-    `UPDATE usuarios SET ${updateFields.join(', ')} WHERE id = ?`,
-    queryParams,
-    (err) => {
-      if (err) {
-        return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar usuário', erro: err });
+  function continueUpdate() {
+    if (updateFields.length === 0) {
+      return res.status(400).json({ sucesso: false, mensagem: 'Nenhum campo para atualizar' });
+    }
+    
+    queryParams.push(req.usuario.id);
+    
+    db.query(
+      `UPDATE usuarios SET ${updateFields.join(', ')} WHERE id = ?`,
+      queryParams,
+      (err) => {
+        if (err) {
+          return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar usuário', erro: err });
+        }
+        
+        db.query(
+          'SELECT id, nome, email, pontos, data_criacao FROM usuarios WHERE id = ?',
+          [req.usuario.id],
+          (err, rows) => {
+            if (err) {
+              return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar usuário atualizado', erro: err });
+            }
+            
+            res.status(200).json({ sucesso: true, mensagem: 'Perfil atualizado com sucesso', dados: rows[0] });
+          }
+        );
       }
-      
-      db.query(
-        'SELECT id, nome, email, pontos, data_criacao FROM usuarios WHERE id = ?',
-        [req.usuario.id],
-        (err, rows) => {
+    );
+  }
+});
+
+// Excluir conta do usuário
+app.delete('/api/users/me', verificarLogin, (req, res) => {
+  // Primeiro, vamos buscar todos os hábitos do usuário para excluir
+  db.query('SELECT id FROM habitos WHERE usuario_id = ?', [req.usuario.id], (err, habitos) => {
+    if (err) {
+      return res.status(500).json({ 
+        sucesso: false, 
+        mensagem: 'Erro ao buscar hábitos do usuário', 
+        erro: err 
+      });
+    }
+    
+    // Função para excluir o usuário após lidar com os hábitos
+    const excluirUsuario = () => {
+      db.query('DELETE FROM usuarios WHERE id = ?', [req.usuario.id], (err) => {
+        if (err) {
+          return res.status(500).json({ 
+            sucesso: false, 
+            mensagem: 'Erro ao excluir usuário', 
+            erro: err 
+          });
+        }
+        
+        res.status(200).json({ 
+          sucesso: true, 
+          mensagem: 'Usuário excluído com sucesso' 
+        });
+      });
+    };
+    
+    // Se o usuário não tem hábitos, podemos excluí-lo diretamente
+    if (habitos.length === 0) {
+      return excluirUsuario();
+    }
+    
+    // Caso contrário, vamos excluir os hábitos um por um
+    let habitosExcluidos = 0;
+    
+    habitos.forEach(habito => {
+      // Primeiro excluir registros de progresso e lembretes associados
+      db.query('DELETE FROM progresso_habitos WHERE habito_id = ?', [habito.id], (err) => {
+        if (err) {
+          console.error('Erro ao excluir progresso de hábito:', err);
+        }
+        
+        db.query('DELETE FROM reminders WHERE habito_id = ?', [habito.id], (err) => {
           if (err) {
-            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar usuário atualizado', erro: err });
+            console.error('Erro ao excluir lembretes de hábito:', err);
           }
           
-          res.status(200).json({ sucesso: true, mensagem: 'Perfil atualizado com sucesso', dados: rows[0] });
-        }
-      );
-    }
-  );
+          // Agora excluir o hábito
+          db.query('DELETE FROM habitos WHERE id = ?', [habito.id], (err) => {
+            if (err) {
+              console.error('Erro ao excluir hábito:', err);
+            }
+            
+            habitosExcluidos++;
+            
+            // Quando todos os hábitos forem excluídos, excluir o usuário
+            if (habitosExcluidos === habitos.length) {
+              excluirUsuario();
+            }
+          });
+        });
+      });
+    });
+  });
 });
 
 // Obter ranking de usuários
