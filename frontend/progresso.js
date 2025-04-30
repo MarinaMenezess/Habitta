@@ -133,8 +133,8 @@ function carregarTemasPorQuantidade() {
     
     const usuario = JSON.parse(usuarioData);
     
-    // Buscar hábitos do usuário agrupados por tema
-    fetch('http://localhost:3000/api/habits', {
+    // Buscar estatísticas por tema
+    fetch('http://localhost:3000/api/habits/stats/by-theme', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -144,110 +144,83 @@ function carregarTemasPorQuantidade() {
     .then(response => response.json())
     .then(data => {
         if (data.sucesso) {
-            const habitos = data.dados;
+            const estatisticas = data.dados;
             
-            // Agrupar hábitos por tema
-            const temasPorQuantidade = contarHabitosPorTema(habitos);
+            // Encontrar o tema com mais hábitos concluídos
+            let temaMaisConcluido = null;
+            let maxConclusoes = -1;
+            
+            for (const tema in estatisticas) {
+                if (estatisticas[tema].concluidos > maxConclusoes) {
+                    maxConclusoes = estatisticas[tema].concluidos;
+                    temaMaisConcluido = tema;
+                }
+            }
+            
+            // Atualizar o elemento HTML do tema mais concluído
+            const elemento = document.getElementById('tema-mais-concluido');
+            if (elemento && temaMaisConcluido) {
+                elemento.textContent = mapeamentoTemas[temaMaisConcluido] || temaMaisConcluido;
+            }
             
             // Atualizar lista de temas
-            atualizarListaTemas(temasPorQuantidade);
-            
-            // Atualizar tema com mais hábitos
-            const temaMaisHabitos = encontrarTemaMaisHabitos(temasPorQuantidade);
-            const temaMaisHabitosElement = document.querySelector('.progress-card:nth-child(2) b');
-            if (temaMaisHabitosElement) {
-                temaMaisHabitosElement.textContent = temaMaisHabitos || 'Nenhum tema';
+            const tasksList = document.getElementById('tasks');
+            if (tasksList) {
+                tasksList.innerHTML = '';
+                
+                // Filtrar apenas temas que têm hábitos
+                const temasComHabitos = Object.entries(estatisticas)
+                    .filter(([_, stats]) => stats.total > 0)
+                    .sort(([,a], [,b]) => b.concluidos - a.concluidos);
+                
+                temasComHabitos.forEach(([tema, stats]) => {
+                    const nomeTemaMostrar = mapeamentoTemas[tema] || tema;
+                    const temaElement = document.createElement('li');
+                    temaElement.className = 'task';
+                    temaElement.innerHTML = `
+                        <p class="task-name">${nomeTemaMostrar}</p>
+                        <a href="./habitos.html?tema=${tema}">
+                            <div class="task-info">
+                                <p>${stats.total} ${stats.total === 1 ? 'hábito' : 'hábitos'} - ${stats.concluidos} ${stats.concluidos === 1 ? 'conclusão' : 'conclusões'}</p>
+                                <img src="./assets/arrow-right-short.svg" alt="">
+                            </div>
+                        </a>
+                    `;
+                    tasksList.appendChild(temaElement);
+                });
+
+                // Se não houver hábitos em nenhum tema
+                if (temasComHabitos.length === 0) {
+                    const semHabitos = document.createElement('li');
+                    semHabitos.className = 'task';
+                    semHabitos.innerHTML = `
+                        <p class="task-name">Nenhum hábito cadastrado</p>
+                        <div class="task-info">
+                            <p>Clique em "Criar novo hábito" para começar</p>
+                        </div>
+                    `;
+                    tasksList.appendChild(semHabitos);
+                }
             }
         }
     })
     .catch(error => {
-        console.error('Erro ao carregar hábitos por tema:', error);
+        console.error('Erro ao carregar estatísticas por tema:', error);
     });
 }
 
-// Função para contar hábitos por tema
-function contarHabitosPorTema(habitos) {
-    const temasPorQuantidade = {};
-    
-    // Mapeamento de valores de tema do banco para nomes exibidos no frontend
-    const mapeamentoTemas = {
-        'saudeMental': 'Saúde e Bem-estar',
-        'saudeFisica': 'Saúde Física',
-        'produtividade': 'Produtividade / Desenvolvimento Pessoal',
-        'rotinaPessoal': 'Autocuidado / Rotina Pessoal',
-        'trabalhoEstudo': 'Trabalho / Estudo',
-        'financasPessoais': 'Finanças Pessoais'
-    };
-    
-    // Contar hábitos por tema
-    habitos.forEach(habito => {
-        const tema = habito.tema || 'trabalhoEstudo'; // Usar valor padrão se não tiver tema
-        const temaExibicao = mapeamentoTemas[tema] || 'Outros';
-        
-        if (!temasPorQuantidade[temaExibicao]) {
-            temasPorQuantidade[temaExibicao] = [];
-        }
-        
-        temasPorQuantidade[temaExibicao].push(habito);
-    });
-    
-    return temasPorQuantidade;
-}
+// Mapeamento de temas para nomes amigáveis
+const mapeamentoTemas = {
+    'saudeMental': 'Saúde e Bem-estar',
+    'saudeFisica': 'Saúde Física',
+    'produtividade': 'Produtividade / Desenvolvimento Pessoal',
+    'rotinaPessoal': 'Autocuidado / Rotina Pessoal',
+    'trabalhoEstudo': 'Trabalho / Estudo',
+    'financasPessoais': 'Finanças Pessoais',
+    'outros': 'Outros'
+};
 
-// Função para encontrar o tema com mais hábitos
-function encontrarTemaMaisHabitos(temasPorQuantidade) {
-    let temaMaisHabitos = null;
-    let maxQuantidade = 0;
-    
-    for (const tema in temasPorQuantidade) {
-        const quantidade = temasPorQuantidade[tema].length;
-        
-        if (quantidade > maxQuantidade) {
-            maxQuantidade = quantidade;
-            temaMaisHabitos = tema;
-        }
-    }
-    
-    return temaMaisHabitos;
-}
-
-// Função para atualizar a lista de temas na UI
-function atualizarListaTemas(temasPorQuantidade) {
-    const tasksList = document.getElementById('tasks');
-    
-    if (!tasksList) return;
-    
-    // Limpar lista atual
-    tasksList.innerHTML = '';
-    
-    // Se não tiver temas, exibir mensagem
-    if (Object.keys(temasPorQuantidade).length === 0) {
-        tasksList.innerHTML = '<p>Você ainda não tem hábitos cadastrados.</p>';
-        return;
-    }
-    
-    // Para cada tema, criar um item de lista
-    for (const tema in temasPorQuantidade) {
-        const habitos = temasPorQuantidade[tema];
-        const quantidade = habitos.length;
-        
-        const temaElement = document.createElement('li');
-        temaElement.className = 'task';
-        temaElement.innerHTML = `
-            <p class="task-name">${tema}</p>
-            <a href="./habitos.html">
-              <div class="task-info">
-                  <p>${quantidade} hábitos a fazer</p>
-                  <img src="./assets/arrow-right-short.svg" alt="">
-              </div>
-            </a>
-        `;
-        
-        tasksList.appendChild(temaElement);
-    }
-}
-
-// Função para cadastrar um novo hábito (reaproveitada do index.js)
+// Função para cadastrar um novo hábito
 function cadastrarHabito(event) {
     event.preventDefault();
     
@@ -298,7 +271,7 @@ function cadastrarHabito(event) {
             // Limpar o formulário
             limparFormularioHabito();
             
-            // Recarregar a página para mostrar os dados atualizados
+            // Recarregar os dados
             carregarEstatisticas();
             carregarTemasPorQuantidade();
         } else {

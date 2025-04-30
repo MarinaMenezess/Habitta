@@ -4,9 +4,9 @@ const mysql = require('mysql2');
 // Configuração da conexão com o banco de dados
 const connection = mysql.createConnection({
   host: 'localhost', 
-  user: 'clinica',
+  user: 'root',
   password: 'root',
-  database: 'root' 
+  database: 'clinica' 
 });
 
 // Conectando ao banco de dados e verificando se há algum erro

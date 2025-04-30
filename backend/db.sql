@@ -42,6 +42,7 @@ CREATE TABLE habitos (
   descricao TEXT,
   meta_diaria INT,
   recorrencia ENUM('diario', 'semanal', 'mensal'),
+  tema VARCHAR(50) DEFAULT 'outros',
   criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );

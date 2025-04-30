@@ -50,68 +50,17 @@
         </div>
 
         <div class="card progress-card">
-            <p>Você fez mais hábito de:</p>
-            <p><b>Trabalho / Estudo</b></p>
+            <p>Você concluiu mais hábitos de:</p>
+            <p><b id="tema-mais-concluido">Carregando...</b></p>
         </div>
       </div>
+      
+      <h2>Progresso por Tema</h2>
       <ul id="tasks">
-        <li class="task">
-            <p class="task-name">Trabalho / Estudo</p>
-            <a href="./habitos.html">
-              <div class="task-info">
-                  <p>4 hábitos a fazer</p>
-                  <img src="./assets/arrow-right-short.svg" alt="">
-              </div>
-            </a>
-        </li>
-        <li class="task">
-            <p class="task-name">Autocuidado / Rotina Pessoal</p>
-            <a href="./habitos.html">
-              <div class="task-info">
-                  <p>2 hábitos a fazer</p>
-                  <img src="./assets/arrow-right-short.svg" alt="">
-              </div>
-            </a>
-        </li>
-        <li class="task">
-            <p class="task-name">Saúde Física</p>
-            <a href="./habitos.html">
-              <div class="task-info">
-                  <p>3 hábitos a fazer</p>
-                  <img src="./assets/arrow-right-short.svg" alt="">
-              </div>
-            </a>
-        </li>
-    </ul>
+        <!-- Lista de temas será preenchida dinamicamente pelo JavaScript -->
+      </ul>
 
-      <!-- Modal editar -->
-      <div id="HabitEditModalScreen" class="HabitEditModal">
-        <div class="modal-habit">
-          <span class="fecharEditModalHabit">&times;</span>
-          <h2>Título do hábito</h2>
-          <hr>
-          <form action="">
-            <div class="campo">
-              <label for="descricaoHabitoEdit">Descrição do Hábito:</label>
-              <textarea id="descricaoHabitoEdit" placeholder="Descreva o hábito"></textarea>                
-            </div>    
-            <div class="campo">
-              <label for="metaDiariaEdit">Meta Diária:</label>
-              <input type="number" id="metaDiariaEdit" placeholder="Insira meta diária que será realizado"> 
-            </div>
-            <div class="campo">
-            <label for="recorrenciaEdit">Recorrência:</label>
-            <select id="recorrenciaEdit">
-                <option value="diario">Diário</option>
-                <option value="semanal">Semanal</option>
-                <option value="mensal">Mensal</option>
-            </select> 
-          </form>            
-          </div>
-          <button id="editarHabitoBtn" class="editarHabito">Salvar alterações</button>
-        </div>
-      </div> 
-
+      <!-- Modal para criar novo hábito -->
       <div id="HabitModalScreen" class="HabitModal">
         <div class="modal-habit">
             <span class="fecharModalHabit">&times;</span>
@@ -144,7 +93,8 @@
 
               <div class="campo">
                 <label for="temaHabito">Tema do Hábito:</label>
-                <select id="temaHabito">
+                <select id="temaHabito" required>
+                    <option value="">Selecione um tema</option>
                     <option value="saudeMental">Saúde e Bem-estar</option>
                     <option value="saudeFisica">Saúde Física</option>
                     <option value="produtividade">Produtividade / Desenvolvimento Pessoal</option>

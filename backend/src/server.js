@@ -325,13 +325,13 @@ app.get('/api/users/ranking', (req, res) => {
 // Criar novo hábito
 app.post('/api/habits', verificarLogin, (req, res) => {
   try {
-    const { titulo, descricao, meta_diaria, recorrencia } = req.body;
+    const { titulo, descricao, meta_diaria, recorrencia, tema } = req.body;
     if (!titulo || !recorrencia) {
       return res.status(400).json({ sucesso: false, mensagem: 'Título e recorrência são obrigatórios' });
     }
     db.query(
-      'INSERT INTO habitos (usuario_id, titulo, descricao, meta_diaria, recorrencia) VALUES (?, ?, ?, ?, ?)',
-      [req.usuario.id, titulo, descricao, meta_diaria || 1, recorrencia],
+      'INSERT INTO habitos (usuario_id, titulo, descricao, meta_diaria, recorrencia, tema) VALUES (?, ?, ?, ?, ?, ?)',
+      [req.usuario.id, titulo, descricao, meta_diaria || 1, recorrencia, tema || 'outros'],
       (err, result) => {
         if (err) {
           return res.status(500).json({ sucesso: false, mensagem: 'Erro ao criar hábito', erro: err });
@@ -399,28 +399,39 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
           
           const activeDays = daysRows[0].active_days;
           
-          // Obter sequência atual
+          // Obter sequência atual de dias
           db.query(
-            `SELECT MAX(streak) as current_streak FROM (
-              SELECT 
-                DATEDIFF(@curr_date, data) - 
-                  IF(@prev_completed = 1, 
-                     DATEDIFF(@curr_date, @prev_date), 0) as streak,
-                @prev_date := data,
-                @prev_completed := quantidade > 0,
-                @curr_date := CURRENT_DATE
-              FROM 
-                progresso p
-                JOIN habitos h ON p.habito_id = h.id,
-                (SELECT @curr_date := CURRENT_DATE, 
-                        @prev_date := NULL, 
-                        @prev_completed := NULL) as vars
-              WHERE 
-                h.usuario_id = ?
-                AND p.quantidade > 0
-              ORDER BY 
-                data DESC
-            ) as streak_calc`,
+            `WITH RECURSIVE dates AS (
+                SELECT CURDATE() as date
+                UNION ALL
+                SELECT DATE_SUB(date, INTERVAL 1 DAY)
+                FROM dates
+                WHERE date > DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            ),
+            daily_completions AS (
+                SELECT 
+                    d.date,
+                    CASE 
+                        WHEN COUNT(DISTINCT p.habito_id) > 0 THEN 1 
+                        ELSE 0 
+                    END as completed
+                FROM dates d
+                LEFT JOIN progresso p ON DATE(p.data) = d.date
+                LEFT JOIN habitos h ON p.habito_id = h.id AND h.usuario_id = ?
+                WHERE p.quantidade > 0 OR d.date IS NOT NULL
+                GROUP BY d.date
+                ORDER BY d.date DESC
+            )
+            SELECT 
+                COUNT(*) as current_streak
+            FROM daily_completions
+            WHERE completed = 1
+            AND date >= (
+                SELECT MAX(date)
+                FROM daily_completions
+                WHERE completed = 0
+                AND date <= CURDATE()
+            )`,
             [req.usuario.id],
             (err, streakRows) => {
               if (err) {
@@ -429,41 +440,72 @@ app.get('/api/habits/stats/summary', verificarLogin, (req, res) => {
               
               const currentStreak = streakRows[0]?.current_streak || 0;
               
-              // Obter hábitos mais consistentes
-              db.query(
-                `SELECT 
-                  h.id, h.titulo, COUNT(*) as completion_count 
-                FROM 
-                  progresso p 
-                  JOIN habitos h ON p.habito_id = h.id 
-                WHERE 
-                  h.usuario_id = ? AND p.quantidade > 0 
-                GROUP BY 
-                  h.id 
-                ORDER BY 
-                  completion_count DESC 
-                LIMIT 3`,
-                [req.usuario.id],
-                (err, topHabits) => {
-                  if (err) {
-                    return res.status(500).json({ sucesso: false, mensagem: 'Erro ao buscar estatísticas', erro: err });
-                  }
-                  
-                  res.status(200).json({ 
-                    sucesso: true, 
-                    dados: {
-                      total_habits: totalHabits,
-                      active_days: activeDays,
-                      current_streak: currentStreak,
-                      top_habits: topHabits
-                    } 
-                  });
-                }
-              );
+              res.status(200).json({ 
+                sucesso: true, 
+                dados: {
+                  total_habits: totalHabits,
+                  active_days: activeDays,
+                  current_streak: currentStreak
+                } 
+              });
             }
           );
         }
       );
+    }
+  );
+});
+
+// Obter estatísticas por tema
+app.get('/api/habits/stats/by-theme', verificarLogin, (req, res) => {
+  // Lista de todos os temas possíveis
+  const todosTemas = [
+    'saudeMental',
+    'saudeFisica',
+    'produtividade',
+    'rotinaPessoal',
+    'trabalhoEstudo',
+    'financasPessoais',
+    'outros'
+  ];
+
+  // Buscar todos os hábitos do usuário com seus progressos
+  db.query(
+    `SELECT h.*, COUNT(DISTINCT CASE WHEN p.quantidade > 0 THEN p.data END) as concluidos
+     FROM habitos h
+     LEFT JOIN progresso p ON h.id = p.habito_id
+     WHERE h.usuario_id = ?
+     GROUP BY h.id`,
+    [req.usuario.id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ 
+          sucesso: false, 
+          mensagem: 'Erro ao buscar estatísticas por tema', 
+          erro: err 
+        });
+      }
+
+      // Inicializar estatísticas para todos os temas
+      const estatisticasPorTema = {};
+      todosTemas.forEach(tema => {
+        estatisticasPorTema[tema] = {
+          total: 0,
+          concluidos: 0
+        };
+      });
+
+      // Agrupar hábitos por tema e contar conclusões
+      rows.forEach(habito => {
+        const tema = habito.tema || 'outros';
+        estatisticasPorTema[tema].total++;
+        estatisticasPorTema[tema].concluidos += habito.concluidos || 0;
+      });
+
+      res.status(200).json({ 
+        sucesso: true, 
+        dados: estatisticasPorTema 
+      });
     }
   );
 });
